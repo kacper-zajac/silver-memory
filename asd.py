@@ -36,6 +36,6 @@ board[2][7] = "y"
 
 def print_board(board):
     for a in board:
-        print(" ".join(a))
+        print(" | ".join(a))
 
 print_board(board)
