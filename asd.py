@@ -38,4 +38,6 @@ def print_board(board):
     for a in board:
         print(" | ".join(a))
 
+print ("chuj")
+print ("chuj")
 print_board(board)
