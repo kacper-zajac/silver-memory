@@ -25,14 +25,45 @@ Board[2][2].occupied = 1
 Board[4][2].occupied = 1
 Board[6][2].occupied = 1
 
+Board[1][7].occupied = 1
+Board[1][7].team = "red"
+Board[3][7].occupied = 1
+Board[3][7].team = "red"
+Board[5][7].occupied = 1
+Board[5][7].team = "red"
+Board[7][7].occupied = 1
+Board[7][7].team = "red"
+
+Board[0][6].occupied = 1
+Board[0][6].team = "red"
+Board[2][6].occupied = 1
+Board[2][6].team = "red"
+Board[4][6].occupied = 1
+Board[4][6].team = "red"
+Board[6][6].occupied = 1
+Board[6][6].team = "red"
+
+Board[1][5].occupied = 1
+Board[1][5].team = "red"
 Board[3][5].occupied = 1
 Board[3][5].team = "red"
+Board[5][5].occupied = 1
+Board[5][5].team = "red"
+Board[7][5].occupied = 1
+Board[7][5].team = "red"
+
 
 
 def move(w, l, W, L):
     Board[w][l].occupied = 0
     Board[W][L].occupied = 1
     Board[W][L].team = Board[w][l].team
+    if Board[W][L].team is "black" and L is 7:
+        Board[W][L].occupied = 2
+        print("damka")
+    if Board[W][L].team is "red" and L is 0:
+        Board[W][L].occupied = 2
+
 
 #zeby lepiej wygladalo ale nie pyka coś
 '''                                 
@@ -126,7 +157,10 @@ while running:
                         marked = [x, y]
                 else:
                     if marked[0] > -1 and abs(marked[0] - x) == 1 and abs(marked[1] - y) == 1:
-                        move(marked[0], marked[1], x, y)
+                        if Board[marked[0]][marked[1]].team is "black" and marked[1] - y is -1:
+                            move(marked[0], marked[1], x, y)
+                        elif Board[marked[0]][marked[1]].team is "red" and marked[1] - y is 1:
+                            move(marked[0], marked[1], x, y)
                         marked = [-1, -1]
                     elif marked[0] > -1 and abs(marked[0] - x) == 2 and abs(marked[1] - y) == 2 and Board[int((marked[0] + x)/2)][int((marked[1] + y)/2)].team is not Board[marked[0]][marked[1]].team:  #bicie
                         Board[int((marked[0] + x) / 2)][int((marked[1] + y) / 2)].occupied = False
@@ -147,7 +181,7 @@ while running:
             for p in range(8):
                 for t in range(8):
                     if Board[p][t].occupied is 1:
-                        gameDisplay.blit(pionek, (19 + p * 88, 704 - t * 88 - 65))
+                        gameDisplay.blit(pionek, (19 + p * 88, 704 - t * 88 - 65))      #damke tu dołożyć
 
     pygame.display.update()
     clock.tick(60)              #nw co to
