@@ -59,7 +59,6 @@ def move(w, l, W, L):
     Board[W][L].team = Board[w][l].team
     if Board[W][L].team == "black" and L == 7:
         Board[W][L].occupied = 2
-        print("damka")
     elif Board[W][L].team == "red" and L == 0:
         Board[W][L].occupied = 2
 
@@ -171,7 +170,6 @@ def check_available_moves(x, y):
                     moves += 1
                     break
                 elif Board[x + base[0]][y + base[1]].occupied != 0:
-                    print("elo dla", base[0], base[1])
                     break
                 print(base)
                 base[0] += z[0]
@@ -259,14 +257,11 @@ while running:
                             if Board[marked_x][marked_y].occupied != 0:
                                 if Board[marked_x][marked_y].team == Board[marked[0]][marked[1]].team:
                                     own_team = True
-                                    print("swoj")
                                     break
                                 elif is_a_piece:
-                                    print("Too many", marked_x, marked_y)
                                     too_many_pieces = True
                                     break
                                 is_a_piece = True
-                                print("there is one", marked_x, marked_y)
                                 piece = marked_x, marked_y
                             if x_is_increasing:
                                 marked_x += 1
