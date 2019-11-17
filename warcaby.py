@@ -148,17 +148,34 @@ def board_draw():
 marked = [-1, -1]  # nothing marked, value less than 0
 
 
-def check_available_moves(x, y, team):
-    nums = ((-1, -1), (-1, 1), (1, -1), (1, 1))
+def check_available_moves(x, y):
+    team = Board[x][y].team
+    nums = [[-1, -1], [-1, 1], [1, -1], [1, 1]]
     moves = 0
-    for z in nums:
-        if x + z[0] > 6 or \
-                y + z[1] > 6:
-            continue
-        if (Board[x + z[0]][y + z[1]].occupied != 0
-                and Board[x + z[0]][y + z[1]].team != team
-                and Board[x + 2 * z[0]][y + 2 * z[1]].occupied == 0):
-            moves += 1
+    if Board[x][y].occupied == 1:
+        for z in nums:
+            if x + z[0] > 6 or \
+                    y + z[1] > 6:
+                continue
+            if (Board[x + z[0]][y + z[1]].occupied != 0
+                    and Board[x + z[0]][y + z[1]].team != team
+                    and Board[x + 2 * z[0]][y + 2 * z[1]].occupied == 0):
+                moves += 1
+    elif Board[x][y].occupied == 2:
+        for z in nums:
+            base = z.copy()
+            while 1 <= x + base[0] <= 6 and 1 <= y + base[1] <= 6:
+                if (Board[x + base[0]][y + base[1]].occupied != 0
+                        and Board[x + base[0]][y + base[1]].team != team
+                        and Board[x + base[0] + z[0]][y + base[1] + z[1]].occupied == 0):
+                    moves += 1
+                    break
+                elif Board[x + base[0]][y + base[1]].occupied != 0:
+                    print("elo dla", base[0], base[1])
+                    break
+                print(base)
+                base[0] += z[0]
+                base[1] += z[1]
     return moves
 
 
@@ -187,7 +204,7 @@ while running:
                     Y = Y - 88
             elif event.key == pygame.K_SPACE:
                 if Board[x][y].occupied == 1 or Board[x][y].occupied == 2:
-                    print(check_available_moves(x, y, Board[x][y].team), x, y)
+                    print(check_available_moves(x, y), x, y)
                     marked = [x, y]
                 else:
                     if (marked[0] > -1 and
