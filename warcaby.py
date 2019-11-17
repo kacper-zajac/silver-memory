@@ -10,7 +10,7 @@ class Field:
 
 Board = [[Field() for x in range(8)] for y in range(8)]
 
-Board[0][0].occupied = 1            #ustawianie pionków
+Board[0][0].occupied = 1  # ustawianie pionków
 Board[2][0].occupied = 1
 Board[4][0].occupied = 1
 Board[6][0].occupied = 1
@@ -57,24 +57,24 @@ def move(w, l, W, L):
     Board[W][L].occupied = Board[w][l].occupied
     Board[w][l].occupied = 0
     Board[W][L].team = Board[w][l].team
-    if Board[W][L].team is "black" and L is 7:
+    if Board[W][L].team == "black" and L == 7:
         Board[W][L].occupied = 2
         print("damka")
-    if Board[W][L].team is "red" and L is 0:
+    if Board[W][L].team == "red" and L == 0:
         Board[W][L].occupied = 2
 
 
-#zeby lepiej wygladalo ale nie pyka coś
+# zeby lepiej wygladalo ale nie pyka coś
 '''                                 
 def handle_space(x, y, w, l):
-    if Board[x][y].occupied is 1 or Board[x][y].occupied is 2:
+    if Board[x][y].occupied == 1 or Board[x][y].occupied == 2:
         if w < 0:
             return [x, y]
     else:
         if w > -1 and abs(w - x) == 1 and abs(l - y) == 1:
             move(w, l, x, y)
             return [-1, -1]
-        elif w > -1 and abs(w - x) == 2 and abs(l - y) == 2 and Board[int((l + x) / 2)][int((l + y) / 2)].team is not Board[w][l].team:  # bicie
+        elif w > -1 and abs(w - x) == 2 and abs(l - y) == 2 and Board[int((l + x) / 2)][int((l + y) / 2)].team != Board[w][l].team:  # bicie
             Board[int((w + x) / 2)][int((l + y) / 2)].occupied = False
             #print(statistics.mean([w, x]))  # !!
             move(w, l, x, y)
@@ -92,9 +92,9 @@ def move_left(w, l):
 
 pygame.init()
 
-gameDisplay = pygame.display.set_mode((704, 704))       # 704 podzielne przez 8
+gameDisplay = pygame.display.set_mode((704, 704))  # 704 podzielne przez 8
 pygame.display.set_caption('Warcaby')
-clock = pygame.time.Clock()               #nw po co
+clock = pygame.time.Clock()  # nw po co
 
 img = pygame.image.load("board2.png")
 pionek = pygame.image.load("pionek.png")
@@ -104,76 +104,109 @@ pionekred = pygame.image.load("pionekred.png")
 gameDisplay.blit(img, (0, 0))
 running = True
 
-#filled_rect = pygame.Rect(44, 660, 15, 15)
-#pygame.draw.rect(gameDisplay, (0, 0, 0), filled_rect)
+# filled_rect = pygame.Rect(44, 660, 15, 15)
+# pygame.draw.rect(gameDisplay, (0, 0, 0), filled_rect)
 
-surface = pygame.Surface([15, 15])      # wymiary kwadracika
-surface.fill((225, 0, 0))               #czerwony
+surface = pygame.Surface([15, 15])  # wymiary kwadracika
+surface.fill((225, 0, 0))  # czerwony
 rectangle = surface.get_rect()
 
-X = 60      #display coordinates   n * 88
-Y = 680                         # 704 - m*88
+X = 60  # display coordinates   n * 88
+Y = 680  # 704 - m*88
 
-x = 0   #coordinates
+x = 0  # coordinates
 y = 0
 
-rectangle.x = X         #położenie kwadracika
+pygame.font.init()  # you have to call this at the start,
+# if you want to use this module.
+myfont = pygame.font.SysFont('Times New Roman', 13)
+
+rectangle.x = X  # położenie kwadracika
 rectangle.y = Y
 pygame.draw.rect(gameDisplay, (225, 0, 0), rectangle, 0)
 
-for p in range(8):                          #display pionkis
-    for t in range(8):
-        if Board[p][t].occupied is 1:
-            if Board[p][t].team is "black":
-                gameDisplay.blit(pionek, (19 + p * 88, 704 - t * 88 - 65))
-            else:
-                gameDisplay.blit(pionekred, (19 + p * 88, 704 - t * 88 - 65))
-        elif Board[p][t].occupied is 2:
-            gameDisplay.blit(damka, (19 + p * 88, 704 - t * 88 - 65))
 
-marked = [-1, -1]           #nothing marked, value less than 0
+def board_draw():
+    for p in range(8):  # display pionkis
+        for t in range(8):
+            if Board[p][t].occupied == 0:
+                continue
+            textsurface = myfont.render((str(Board[p][t].occupied) + Board[p][t].team), 1, (0, 0, 0))
+            gameDisplay.blit(textsurface, (19 + p * 88, 704 - t * 88 - 65))
+            '''if Board[p][t].occupied == 1:
+                if Board[p][t].team == "black":
+                    gameDisplay.blit(pionek, (19 + p * 88, 704 - t * 88 - 65))
+                    gameDisplay.blit(textsurface, (19 + p * 88, 704 - t * 88 - 65))
+    
+                else:
+                    gameDisplay.blit(pionekred, (19 + p * 88, 704 - t * 88 - 65))
+            elif Board[p][t].occupied == 2:
+                gameDisplay.blit(damka, (19 + p * 88, 704 - t * 88 - 65))
+    '''
 
 
+marked = [-1, -1]  # nothing marked, value less than 0
+
+
+def check_available_moves(x, y, team):
+    nums = ((-1, -1), (-1, 1), (1, -1), (1, 1))
+    moves = 0
+    for z in nums:
+        if (x + z[0] > 6 or y + z[1] > 6):
+            continue
+        if (Board[x + z[0]][y + z[1]].occupied == 1 or Board[x + z[0]][y + z[1]].occupied) \
+                and (Board[x + z[0]][y + z[1]].team != team) \
+                and (Board[x + 2 * z[0]][y + 2 * z[1]].occupied == 0):
+            moves += 1
+    return moves
+
+board_draw()
 while running:
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        if event.type == pygame.KEYDOWN:
+        elif event.type == pygame.KEYDOWN:
 
             if event.key == pygame.K_LEFT:
-                if x is not 0:
+                if x != 0:
                     x = x - 1
                     X = X - 88
             elif event.key == pygame.K_RIGHT:
-                if x is not 7:
+                if x != 7:
                     x = x + 1
                     X = X + 88
             elif event.key == pygame.K_DOWN:
-                if y is not 0:
+                if y != 0:
                     y = y - 1
                     Y = Y + 88
             elif event.key == pygame.K_UP:
-                if y is not 7:
+                if y != 7:
                     y = y + 1
                     Y = Y - 88
             elif event.key == pygame.K_SPACE:
-                if Board[x][y].occupied is 1 or Board[x][y].occupied is 2:
+                if Board[x][y].occupied == 1 or Board[x][y].occupied == 2:
                     if marked[0] < 0:
+                        print(check_available_moves(x, y, Board[x][y].team), x, y)
                         marked = [x, y]
                 else:
-                    if marked[0] > -1 and abs(marked[0] - x) == 1 and abs(marked[1] - y) == 1 and Board[marked[0]][marked[1]].occupied is 1:
-                        if Board[marked[0]][marked[1]].team is "black" and marked[1] - y is -1:
+                    if marked[0] > -1 and abs(marked[0] - x) == 1 and abs(marked[1] - y) == 1 and Board[marked[0]][
+                        marked[1]].occupied == 1:
+                        if Board[marked[0]][marked[1]].team == "black" and marked[1] - y == -1:
                             move(marked[0], marked[1], x, y)
-                        elif Board[marked[0]][marked[1]].team is "red" and marked[1] - y is 1:
+                        elif Board[marked[0]][marked[1]].team == "red" and marked[1] - y == 1:
                             move(marked[0], marked[1], x, y)
                         marked = [-1, -1]
-                    elif marked[0] > -1 and abs(marked[0] - x) == 2 and abs(marked[1] - y) == 2 and Board[int((marked[0] + x)/2)][int((marked[1] + y)/2)].team is not Board[marked[0]][marked[1]].team and Board[int((marked[0] + x)/2)][int((marked[1] + y)/2)].occupied is not 0:  #bicie
+                    elif marked[0] > -1 and abs(marked[0] - x) == 2 and abs(marked[1] - y) == 2 and \
+                            Board[int((marked[0] + x) / 2)][int((marked[1] + y) / 2)].team \
+                            != Board[marked[0]][marked[1]].team and Board[int((marked[0] + x) / 2)][
+                        int((marked[1] + y) / 2)].occupied != 0:  # bicie
                         Board[int((marked[0] + x) / 2)][int((marked[1] + y) / 2)].occupied = 0
-                        #print(statistics.mean([marked[0], x]))      #!!
+                        # print(statistics.mean([marked[0], x]))      #!!
                         move(marked[0], marked[1], x, y)
                         marked = [-1, -1]
-                    elif marked[0] > -1 and abs(marked[0] - x) is abs(marked[1] - y) and Board[marked[0]][marked[1]].occupied is 2:
+                    elif marked[0] > -1 and abs(marked[0] - x) == abs(marked[1] - y) and Board[marked[0]][
+                        marked[1]].occupied == 2:
 
                         move(marked[0], marked[1], x, y)
                         marked = [-1, -1]
@@ -188,20 +221,10 @@ while running:
             rectangle.y = Y
             pygame.draw.rect(gameDisplay, (225, 0, 0), rectangle, 0)
 
-            for p in range(8):                  # refresh pionek standings
-                for t in range(8):
-                    if Board[p][t].occupied is 1:
-                        if Board[p][t].team is "black":
-                            gameDisplay.blit(pionek, (19 + p * 88, 704 - t * 88 - 65))
-                        else:
-                            gameDisplay.blit(pionekred, (19 + p * 88, 704 - t * 88 - 65))
-                    elif Board[p][t].occupied is 2:
-                        gameDisplay.blit(damka, (19 + p * 88, 704 - t * 88 - 65))
+            board_draw()
 
     pygame.display.update()
-    clock.tick(60)              #nw co to
+    clock.tick(60)  # nw co to
 
 pygame.quit()
 sys.exit()
-
-
