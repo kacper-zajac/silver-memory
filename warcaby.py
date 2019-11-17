@@ -49,14 +49,13 @@ Board[3][5].occupied = 1
 Board[3][5].team = "red"
 Board[5][5].occupied = 1
 Board[5][5].team = "red"
-Board[7][5].occupied = 1
+Board[7][5].occupied = 2
 Board[7][5].team = "red"
 
 
-
 def move(w, l, W, L):
+    Board[W][L].occupied = Board[w][l].occupied
     Board[w][l].occupied = 0
-    Board[W][L].occupied = 1
     Board[W][L].team = Board[w][l].team
     if Board[W][L].team is "black" and L is 7:
         Board[W][L].occupied = 2
@@ -99,6 +98,8 @@ clock = pygame.time.Clock()               #nw po co
 
 img = pygame.image.load("board2.png")
 pionek = pygame.image.load("pionek.png")
+damka = pygame.image.load("damka.png")
+pionekred = pygame.image.load("pionekred.png")
 
 gameDisplay.blit(img, (0, 0))
 running = True
@@ -120,10 +121,15 @@ rectangle.x = X         #położenie kwadracika
 rectangle.y = Y
 pygame.draw.rect(gameDisplay, (225, 0, 0), rectangle, 0)
 
-for p in range(8):
+for p in range(8):                          #display pionkis
     for t in range(8):
         if Board[p][t].occupied is 1:
-            gameDisplay.blit(pionek, (19 + p * 88, 704 - t * 88 - 65))
+            if Board[p][t].team is "black":
+                gameDisplay.blit(pionek, (19 + p * 88, 704 - t * 88 - 65))
+            else:
+                gameDisplay.blit(pionekred, (19 + p * 88, 704 - t * 88 - 65))
+        elif Board[p][t].occupied is 2:
+            gameDisplay.blit(damka, (19 + p * 88, 704 - t * 88 - 65))
 
 marked = [-1, -1]           #nothing marked, value less than 0
 
@@ -156,15 +162,19 @@ while running:
                     if marked[0] < 0:
                         marked = [x, y]
                 else:
-                    if marked[0] > -1 and abs(marked[0] - x) == 1 and abs(marked[1] - y) == 1:
+                    if marked[0] > -1 and abs(marked[0] - x) == 1 and abs(marked[1] - y) == 1 and Board[marked[0]][marked[1]].occupied is 1:
                         if Board[marked[0]][marked[1]].team is "black" and marked[1] - y is -1:
                             move(marked[0], marked[1], x, y)
                         elif Board[marked[0]][marked[1]].team is "red" and marked[1] - y is 1:
                             move(marked[0], marked[1], x, y)
                         marked = [-1, -1]
-                    elif marked[0] > -1 and abs(marked[0] - x) == 2 and abs(marked[1] - y) == 2 and Board[int((marked[0] + x)/2)][int((marked[1] + y)/2)].team is not Board[marked[0]][marked[1]].team:  #bicie
-                        Board[int((marked[0] + x) / 2)][int((marked[1] + y) / 2)].occupied = False
+                    elif marked[0] > -1 and abs(marked[0] - x) == 2 and abs(marked[1] - y) == 2 and Board[int((marked[0] + x)/2)][int((marked[1] + y)/2)].team is not Board[marked[0]][marked[1]].team and Board[int((marked[0] + x)/2)][int((marked[1] + y)/2)].occupied is not 0:  #bicie
+                        Board[int((marked[0] + x) / 2)][int((marked[1] + y) / 2)].occupied = 0
                         #print(statistics.mean([marked[0], x]))      #!!
+                        move(marked[0], marked[1], x, y)
+                        marked = [-1, -1]
+                    elif marked[0] > -1 and abs(marked[0] - x) is abs(marked[1] - y) and Board[marked[0]][marked[1]].occupied is 2:
+
                         move(marked[0], marked[1], x, y)
                         marked = [-1, -1]
                     else:
@@ -178,10 +188,15 @@ while running:
             rectangle.y = Y
             pygame.draw.rect(gameDisplay, (225, 0, 0), rectangle, 0)
 
-            for p in range(8):
+            for p in range(8):                  # refresh pionek standings
                 for t in range(8):
                     if Board[p][t].occupied is 1:
-                        gameDisplay.blit(pionek, (19 + p * 88, 704 - t * 88 - 65))      #damke tu dołożyć
+                        if Board[p][t].team is "black":
+                            gameDisplay.blit(pionek, (19 + p * 88, 704 - t * 88 - 65))
+                        else:
+                            gameDisplay.blit(pionekred, (19 + p * 88, 704 - t * 88 - 65))
+                    elif Board[p][t].occupied is 2:
+                        gameDisplay.blit(damka, (19 + p * 88, 704 - t * 88 - 65))
 
     pygame.display.update()
     clock.tick(60)              #nw co to
