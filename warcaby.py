@@ -1,31 +1,3 @@
-Przejdź
-do
-treści
-Korzystanie
-z
-usługi
-Gmail
-z
-czytnikami
-ekranu
-1
-z
-3
-590
-(brak tematu)
-Mateusz
-Śledź
-
-Załączniki23: 0
-9(1
-minutę
-temu)
-
-do
-mnie
-Obszar
-załączników
-
 import pygame
 import sys
 import statistics
@@ -347,6 +319,49 @@ def check_available_moves(board, x, y):
                 base[1] += z[1]
     return moves
 
+
+
+def possible_outcomes():
+    tree = GameTree(Board, None)
+    iter1 = 8
+    iter2 = 8
+    nums = [[-1, -1], [-1, 1], [1, -1], [1, 1]]
+    while iter1 >= 0:
+        while iter2 >= 0:
+            if Board[iter1][iter2] == 1:
+                team = Board[x][y].team
+                for z in nums:
+                    if x + z[0] > 6 or \
+                            y + z[1] > 6:
+                        continue
+                    if (Board[x + z[0]][y + z[1]].occupied != 0
+                            and Board[x + z[0]][y + z[1]].team != team
+                            and Board[x + 2 * z[0]][y + 2 * z[1]].occupied == 0):
+                        new_board = Board.copy()
+                        new_board[x][y].occupied = 0
+                        new_board[x + z[0]][y + z[1]].occupied = 0
+                        new_board[x + 2 * z[0]][y + 2 * z[1]].occupied = 1
+                        new_board[x + 2 * z[0]][y + 2 * z[1]].team = team
+
+
+                        tree.children.append(new_board)
+                    elif Board[x + z[0]][y + z[1]].occupied == 0:
+                        pass  # rusz sie i evaluate i zapisz
+            if Board[iter1][
+                iter2] == 2:  # nie no typie damka to koniec przecież tu każdy ruch możliwy to dodatkowa plansza
+                team = Board[x][y].team
+                for z in nums:
+                    base = z.copy()
+                    while 1 <= x + base[0] <= 6 and 1 <= y + base[1] <= 6:
+                        if (Board[x + base[0]][y + base[1]].occupied != 0
+                                and Board[x + base[0]][y + base[1]].team != team
+                                and Board[x + base[0] + z[0]][y + base[1] + z[1]].occupied == 0):
+                            break
+                        elif Board[x + base[0]][y + base[1]].occupied != 0:
+                            break
+                        print(base)
+                        base[0] += z[0]
+                        base[1] += z[1]
 
 board_draw()
 while running:
