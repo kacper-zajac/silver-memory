@@ -211,6 +211,7 @@ def possible_outcomes():
                         new_board[x + 2 * z[0]][y + 2 * z[1]].occupied = 1
                         new_board[x + 2 * z[0]][y + 2 * z[1]].team = team
 
+
                         tree.children.append(new_board)
                     elif Board[x + z[0]][y + z[1]].occupied == 0:
                         pass  # rusz sie i evaluate i zapisz
