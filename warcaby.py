@@ -1,15 +1,104 @@
 import pygame
 import sys
 import statistics
+import copy
 
 
 class Field:
-    occupied = 0  # 0 - field free        1 - regular pionek    2 - damka
-    team = "black"
+    def __init__(self):
+        self.occupied = 0  # 0 - field free        1 - regular pionek    2 - damka
+        self.team = "black"
+
+
+class Node:
+    def __init__(self, board):
+        self.children = []
+        self.score = 0
+        self.board = board
+
+    def write(self):
+        print("My score: " + str(self.score))
+
+    def eval(self):                     # użytkownik - plus punkty team black
+                                        # ai - minus punkty team red
+                                        # uzytkownik - max , ai - min
+        score = 0
+        for p in range(8):
+            for t in range(8):
+                if self.board[p][t].occupied is 0:
+                    continue
+                if self.board[p][t].team is "red":
+                    continue
+                elif self.board[p][t].occupied is 1:
+                    score += 7
+                    if 0 < p < 7:
+                        if 1 < p < 6:
+                            score += 1
+                        score += 1
+                    if 1 < t:
+                        score += 1
+                        if 3 < t:
+                            score += 2
+                            if 5 < t:
+                                score += 8
+                elif self.board[p][t].occupied is 2:
+                    score += 36
+
+        for p in range(8):
+            for t in range(8):
+                if self.board[p][t].occupied is 0:
+                    continue
+                if self.board[p][t].team is "black":
+                    continue
+                elif self.board[p][t].occupied is 1:
+                    score -= 7
+                    if 0 < p < 7:
+                        if 1 < p < 6:
+                            score -= 1
+                        score -= 1
+                    if t < 6:
+                        score -= 1
+                        if t < 4:
+                            score -= 2
+                            if t < 2:
+                                score -= 8
+                elif self.board[p][t].occupied is 2:
+                    score -= 36
+        self.score = score
+        return score
+
+
+def minimax(node, depth, maximize):
+
+    if depth is 0:                                  # or game over in node
+        return node.eval()
+
+    if maximize is 1:
+        maxEval = -1000000
+        for child in node.children:
+            eval = minimax(child, depth - 1, 0)
+            maxEval = max(maxEval, eval)
+            node.score = maxEval
+            #alpha = max(alpha, eval)
+            #if beta <= alpha:
+             #   break
+        return maxEval
+    elif maximize is 0:
+        minEval = 1000000
+        for child in node.children:
+            eval = minimax(child, depth - 1, 1)
+            minEval = min(minEval, eval)
+            node.score = minEval
+            #beta = min(beta, eval)
+            #if beta <= alpha:
+             #   break
+        return minEval
 
 
 Board = [[Field() for x in range(8)] for y in range(8)]
 
+
+'''
 Board[0][0].occupied = 1  # ustawianie pionków
 Board[2][0].occupied = 1
 Board[4][0].occupied = 1
@@ -18,14 +107,17 @@ Board[6][0].occupied = 1
 Board[1][1].occupied = 1
 Board[3][1].occupied = 1
 Board[5][1].occupied = 1
-Board[7][1].occupied = 1
+Board[7][1].occupied = 1'''
 
 Board[0][2].occupied = 1
 Board[2][2].occupied = 1
 Board[4][2].occupied = 1
 Board[6][2].occupied = 1
 
-'''Board[1][7].occupied = 1
+
+
+'''
+Board[1][7].occupied = 1
 Board[1][7].team = "red"
 Board[3][7].occupied = 1
 Board[3][7].team = "red"
@@ -43,13 +135,13 @@ Board[4][6].team = "red"
 Board[6][6].occupied = 1
 Board[6][6].team = "red"'''
 
-Board[1][5].occupied = 1
+Board[1][5].occupied = 2
 Board[1][5].team = "red"
 Board[3][5].occupied = 1
 Board[3][5].team = "red"
 Board[5][5].occupied = 1
 Board[5][5].team = "red"
-Board[7][5].occupied = 2
+Board[7][5].occupied = 1
 Board[7][5].team = "red"
 
 
@@ -61,6 +153,69 @@ def move(w, l, W, L):
         Board[W][L].occupied = 2
     elif Board[W][L].team == "red" and L == 0:
         Board[W][L].occupied = 2
+
+
+def ai(board):
+
+    depth = 2
+    root = Node(board)          # od zajaca root
+
+    newboard = copy.deepcopy(board)            # testy
+    newboard[5][5].occupied = 2         #
+    newboard[5][5].team = "black"           #
+
+    newboard2 = copy.deepcopy(board)             # testy
+    newboard2[5][5].occupied = 1         #
+    newboard2[5][5].team = "black"           #
+
+    newboard3 = copy.deepcopy(board)
+    newboard4 = copy.deepcopy(board)
+    newboard5 = copy.deepcopy(board)
+
+    temp4 = Node(newboard4)
+    temp3 = Node(newboard3)
+    temp5 = Node(newboard5)
+
+    newboard3[0][0].occupied = 2
+    newboard3[0][0].team = "black"
+    newboard3[0][1].occupied = 1
+    newboard3[0][1].team = "black"
+
+    newboard4[0][0].occupied = 2
+    newboard4[0][0].team = "black"
+    newboard4[0][1].occupied = 2
+    newboard4[0][1].team = "black"
+
+    newboard5[0][0].occupied = 2
+    newboard5[0][0].team = "red"
+    newboard5[0][1].occupied = 1
+    newboard5[0][1].team = "red"
+
+    temp = Node(newboard)
+    temp2 = Node(newboard2)
+    root.children.append(temp2)
+    root.children.append(temp)
+
+    root.children[0].children.append(temp4)
+    root.children[0].children.append(temp3)
+    root.children[1].children.append(temp5)
+
+    # koniec testow
+
+    result = minimax(root, depth, 0)
+
+    for x in root.children:
+        for p in x.children:
+            print(p.score)
+    print("minimax: " + str(root.score))
+
+    for child in root.children:
+        if child.score is result:
+            print("No znalazło czy nie")
+            return child.board
+
+
+ai(Board)
 
 
 # zeby lepiej wygladalo ale nie pyka coś
@@ -81,12 +236,6 @@ def handle_space(x, y, w, l):
         else:
             return [-1, -1]
     return [-1, -1]
-'''
-
-'''
-def move_left(w, l):
-    Board[w][l].occupied = False
-    Board[w-1][l+1].occupied = True
 '''
 
 pygame.init()
@@ -147,29 +296,29 @@ def board_draw():
 marked = [-1, -1]  # nothing marked, value less than 0
 
 
-def check_available_moves(x, y):
-    team = Board[x][y].team
+def check_available_moves(board, x, y):
+    team = board[x][y].team
     nums = [[-1, -1], [-1, 1], [1, -1], [1, 1]]
     moves = 0
-    if Board[x][y].occupied == 1:
+    if board[x][y].occupied == 1:
         for z in nums:
             if x + z[0] > 6 or \
                     y + z[1] > 6:
                 continue
-            if (Board[x + z[0]][y + z[1]].occupied != 0
-                    and Board[x + z[0]][y + z[1]].team != team
-                    and Board[x + 2 * z[0]][y + 2 * z[1]].occupied == 0):
+            if (board[x + z[0]][y + z[1]].occupied != 0
+                    and board[x + z[0]][y + z[1]].team != team
+                    and board[x + 2 * z[0]][y + 2 * z[1]].occupied == 0):
                 moves += 1
-    elif Board[x][y].occupied == 2:
+    elif board[x][y].occupied == 2:
         for z in nums:
             base = z.copy()
             while 1 <= x + base[0] <= 6 and 1 <= y + base[1] <= 6:
-                if (Board[x + base[0]][y + base[1]].occupied != 0
-                        and Board[x + base[0]][y + base[1]].team != team
-                        and Board[x + base[0] + z[0]][y + base[1] + z[1]].occupied == 0):
+                if (board[x + base[0]][y + base[1]].occupied != 0
+                        and board[x + base[0]][y + base[1]].team != team
+                        and board[x + base[0] + z[0]][y + base[1] + z[1]].occupied == 0):
                     moves += 1
                     break
-                elif Board[x + base[0]][y + base[1]].occupied != 0:
+                elif board[x + base[0]][y + base[1]].occupied != 0:
                     break
                 print(base)
                 base[0] += z[0]
@@ -202,7 +351,7 @@ while running:
                     Y = Y - 88
             elif event.key == pygame.K_SPACE:
                 if Board[x][y].occupied == 1 or Board[x][y].occupied == 2:
-                    print(check_available_moves(x, y), x, y)
+                    print(check_available_moves(Board, x, y), x, y)
                     marked = [x, y]
                 else:
                     if (marked[0] > -1 and
@@ -295,4 +444,3 @@ while running:
     clock.tick(60)  # nw co to
 
 pygame.quit()
-sys.exit()
