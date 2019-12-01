@@ -58,6 +58,18 @@ counter_black = 12
 counter_red = 12
 
 
+class GameTree:  # tego to nw czy uzywac
+    def __init__(self, board, parent):
+        self.children = []
+        self.score = 0
+        self.board = board
+        self.parent = parent
+
+    def write(self):
+        print(self.score)
+
+
+
 def move(w, l, W, L):
     Board[W][L].occupied = Board[w][l].occupied
     Board[w][l].occupied = 0
@@ -88,17 +100,11 @@ def handle_space(x, y, w, l):
     return [-1, -1]
 '''
 
-'''
-def move_left(w, l):
-    Board[w][l].occupied = False
-    Board[w-1][l+1].occupied = True
-'''
-
 pygame.init()
 
 gameDisplay = pygame.display.set_mode((704, 704))  # 704 podzielne przez 8
 pygame.display.set_caption('Warcaby')
-clock = pygame.time.Clock()  # nw po co
+clock = pygame.time.Clock()
 
 img = pygame.image.load("board2.png")
 pionek = pygame.image.load("pionek.png")
@@ -181,6 +187,53 @@ def check_available_moves(x, y):
                 base[0] += z[0]
                 base[1] += z[1]
     return moves
+
+
+def possible_outcomes():
+    tree = GameTree(Board, None)
+    iter1 = 8
+    iter2 = 8
+    nums = [[-1, -1], [-1, 1], [1, -1], [1, 1]]
+    while iter1 >= 0:
+        while iter2 >= 0:
+            if Board[iter1][iter2] == 1:
+                team = Board[x][y].team
+                for z in nums:
+                    if x + z[0] > 6 or \
+                            y + z[1] > 6:
+                        continue
+                    if (Board[x + z[0]][y + z[1]].occupied != 0
+                            and Board[x + z[0]][y + z[1]].team != team
+                            and Board[x + 2 * z[0]][y + 2 * z[1]].occupied == 0):
+                        new_board = Board.copy()
+                        new_board[x][y].occupied = 0
+                        new_board[x + z[0]][y + z[1]].occupied = 0
+                        new_board[x + 2 * z[0]][y + 2 * z[1]].occupied = 1
+                        new_board[x + 2 * z[0]][y + 2 * z[1]].team = team
+
+                        tree.children.append(new_board)
+                    elif Board[x + z[0]][y + z[1]].occupied == 0:
+                        pass  # rusz sie i evaluate i zapisz
+            if Board[iter1][
+                iter2] == 2:  # nie no typie damka to koniec przecież tu każdy ruch możliwy to dodatkowa plansza
+                team = Board[x][y].team
+                for z in nums:
+                    base = z.copy()
+                    while 1 <= x + base[0] <= 6 and 1 <= y + base[1] <= 6:
+                        if (Board[x + base[0]][y + base[1]].occupied != 0
+                                and Board[x + base[0]][y + base[1]].team != team
+                                and Board[x + base[0] + z[0]][y + base[1] + z[1]].occupied == 0):
+                            break
+                        elif Board[x + base[0]][y + base[1]].occupied != 0:
+                            break
+                        print(base)
+                        base[0] += z[0]
+                        base[1] += z[1]
+
+
+def bij(current_board, from_x, from_y, to_x, to_y, team, piece):
+    current_board[from_x][from_y].occupied = 0
+    current_board[to_x][to_y].occupied
 
 
 AI_turn = False  # False -> Ruch gracza, True -> ruch komputerka
