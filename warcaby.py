@@ -187,9 +187,9 @@ def possible_outcomes(node, team):
                                 y + z[1] < 1:
                             continue
                         if (node.board[x + z[0]][y + z[1]].occupied != 0
-                                and node.board[x + z[0]][y + z[1]].team != team):
-                            if node.board[x + 2 * z[0]][y + 2 * z[1]].occupied == 0:
-                                break
+                                and node.board[x + z[0]][y + z[1]].team != team
+                                and node.board[x + 2 * z[0]][y + 2 * z[1]].occupied == 0):
+
                             # move jest mozliwe
                             new_board = copy.deepcopy(node.board)
                             new_board[x][y].occupied = 0
