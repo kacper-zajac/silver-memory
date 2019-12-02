@@ -26,92 +26,72 @@ class Node:
         score = 0
         for p in range(8):
             for t in range(8):
-                if self.board[p][t].occupied is 0:
+                if self.board[p][t].occupied == 0:
                     continue
-                if self.board[p][t].team is "red":
+                if self.board[p][t].team == "red":
                     continue
-                elif self.board[p][t].occupied is 1:
+                elif self.board[p][t].occupied == 1:
                     score += 7
-                    if 0 < p < 7:
-                        if 1 < p < 6:
-                            score += 1
-                        score += 1
-                    if 1 < t:
-                        score += 1
-                        if 3 < t:
-                            score += 2
-                            if 5 < t:
-                                score += 8
-                elif self.board[p][t].occupied is 2:
-                    score += 36
+                elif self.board[p][t].occupied == 2:
+                    score += 100
 
         for p in range(8):
             for t in range(8):
-                if self.board[p][t].occupied is 0:
+                if self.board[p][t].occupied == 0:
                     continue
-                if self.board[p][t].team is "black":
+                if self.board[p][t].team == "black":
                     continue
-                elif self.board[p][t].occupied is 1:
+                elif self.board[p][t].occupied == 1:
                     score -= 7
-                    if 0 < p < 7:
-                        if 1 < p < 6:
-                            score -= 1
-                        score -= 1
-                    if t < 6:
-                        score -= 1
-                        if t < 4:
-                            score -= 2
-                            if t < 2:
-                                score -= 8
-                elif self.board[p][t].occupied is 2:
-                    score -= 36
+                elif self.board[p][t].occupied == 2:
+                    score -= 100
         self.score = score
         return score
 
 
-def minimax(node, depth, maximize):
-    if depth is 0:  # or game over in node
+def minimax(node, depth, alpha, beta, maximize):
+    if depth == 0:  # or game over in node
         return node.eval()
 
-    if maximize is 1:
+    if maximize == 1:
         maxEval = -1000000
         for child in node.children:
-            eval = minimax(child, depth - 1, 0)
+            eval = minimax(child, depth - 1, -2, 2, 0)
             maxEval = max(maxEval, eval)
             node.score = maxEval
-            # alpha = max(alpha, eval)
-            # if beta <= alpha:
-            #   break
+            alpha = max(alpha, eval)
+            if beta <= alpha:
+                break
         return maxEval
-    elif maximize is 0:
+    elif maximize == 0:
         minEval = 1000000
         for child in node.children:
-            eval = minimax(child, depth - 1, 1)
+            eval = minimax(child, depth - 1, -2, 2, 1)
             minEval = min(minEval, eval)
             node.score = minEval
-            # beta = min(beta, eval)
-            # if beta <= alpha:
-            #   break
+            beta = min(beta, eval)
+            if beta <= alpha:
+                break
         return minEval
 
 
 Board = [[Field() for x in range(8)] for y in range(8)]
 
-Board[0][0].occupied = 1  # ustawianie pionków
+'''Board[0][0].occupied = 1  # ustawianie pionków
 Board[2][0].occupied = 1
 Board[4][0].occupied = 1
 Board[6][0].occupied = 1
-
+'''
 Board[1][1].occupied = 1
 Board[3][1].occupied = 1
 Board[5][1].occupied = 1
 Board[7][1].occupied = 1
-
+'''
 Board[0][2].occupied = 1
 Board[2][2].occupied = 1
 Board[4][2].occupied = 1
 Board[6][2].occupied = 1
-
+'''
 Board[1][7].occupied = 1
 Board[1][7].team = "red"
 Board[3][7].occupied = 1
@@ -182,7 +162,8 @@ def possible_outcomes(node, team):
     while x >= 0:
         y = 7
         while y >= 0:
-            if node.board[x][y].occupied == 1:
+            if (node.board[x][y].occupied == 1
+                    and node.board[x][y].team == team):
                 if is_bicie:
                     for z in nums:
                         if x + z[0] > 6 or \
@@ -206,10 +187,10 @@ def possible_outcomes(node, team):
                             node.children.append(new_node)
                 else:
                     for z in nums_move:
-                        if x + z[0] > 6 or \
-                                y + z[1] > 6 or \
-                                x + z[0] < 1 or \
-                                y + z[1] < 1:
+                        if x + z[0] > 7 or \
+                                y + z[1] > 7 or \
+                                x + z[0] < 0 or \
+                                y + z[1] < 0:
                             continue
                         if node.board[x + z[0]][y + z[1]].occupied == 0:
                             new_board = copy.deepcopy(node.board)
@@ -267,21 +248,15 @@ def move(w, l, W, L):
 
 
 def ai(board):
-    depth = 2
+    depth = 3
     root = Node(board)  # od zajaca root
     root = possible_outcomes(root, "red")
     root = wspaniala_funkcja(depth, root, 1)
 
-    result = minimax(root, depth, 1)
-
-    for x in root.children:
-        for p in x.children:
-            print(p.score)
-    print("minimax: " + str(root.score))
+    result = minimax(root, depth, -2, 2, 1)
 
     for child in root.children:
         if child.score is result:
-            print("No znalazło czy nie")
             return child.board
 
 
@@ -335,7 +310,6 @@ def board_draw():
                     gameDisplay.blit(pionekred, (19 + p * 88, 704 - t * 88 - 65))
             elif Board[p][t].occupied == 2:
                 gameDisplay.blit(damka, (19 + p * 88, 704 - t * 88 - 65))
-
 
 
 marked = [-1, -1]  # nothing marked, value less than 0
