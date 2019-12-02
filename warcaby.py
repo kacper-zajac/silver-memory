@@ -17,7 +17,6 @@ class Node:
         self.board = board
         self.score = 0
 
-
     def write(self):
         print("My score: " + str(self.score))
 
@@ -98,7 +97,6 @@ def minimax(node, depth, maximize):
 
 Board = [[Field() for x in range(8)] for y in range(8)]
 
-'''
 Board[0][0].occupied = 1  # ustawianie pionków
 Board[2][0].occupied = 1
 Board[4][0].occupied = 1
@@ -107,14 +105,13 @@ Board[6][0].occupied = 1
 Board[1][1].occupied = 1
 Board[3][1].occupied = 1
 Board[5][1].occupied = 1
-Board[7][1].occupied = 1'''
+Board[7][1].occupied = 1
 
 Board[0][2].occupied = 1
 Board[2][2].occupied = 1
 Board[4][2].occupied = 1
 Board[6][2].occupied = 1
 
-'''
 Board[1][7].occupied = 1
 Board[1][7].team = "red"
 Board[3][7].occupied = 1
@@ -131,7 +128,7 @@ Board[2][6].team = "red"
 Board[4][6].occupied = 1
 Board[4][6].team = "red"
 Board[6][6].occupied = 1
-Board[6][6].team = "red"'''
+Board[6][6].team = "red"
 
 Board[1][5].occupied = 1
 Board[1][5].team = "red"
@@ -173,46 +170,58 @@ def is_move_available(board, team):
     return False
 
 
-def possible_outcomes(node):
-    is_bicie = is_move_available(node.board, "red")
+def possible_outcomes(node, team):
+    is_bicie = is_move_available(node.board, team)
     nums = [[-1, -1], [-1, 1], [1, -1], [1, 1]]
+    nums_move = []
+    if team == "black":
+        nums_move = [[-1, 1], [1, 1]]
+    else:
+        nums_move = [[-1, -1], [1, -1]]
     x = 7
     while x >= 0:
         y = 7
         while y >= 0:
             if node.board[x][y].occupied == 1:
-                team = node.board[x][y].team
+                if is_bicie:
+                    for z in nums:
+                        if x + z[0] > 6 or \
+                                y + z[1] > 6 or \
+                                x + z[0] < 1 or \
+                                y + z[1] < 1:
+                            continue
+                        if (node.board[x + z[0]][y + z[1]].occupied != 0
+                                and node.board[x + z[0]][y + z[1]].team != team
+                                and node.board[x + 2 * z[0]][y + 2 * z[1]].occupied == 0):
+                            # bicie jest mozliwe
+                            new_board = copy.deepcopy(node.board)
+                            new_board[x][y].occupied = 0
+                            new_board[x + z[0]][y + z[1]].occupied = 0
+                            if y + 2 * z[1] == 0:
+                                new_board[x + 2 * z[0]][y + 2 * z[1]].occupied = 2
+                            else:
+                                new_board[x + 2 * z[0]][y + 2 * z[1]].occupied = 1
+                            new_board[x + 2 * z[0]][y + 2 * z[1]].team = team
+                            new_node = Node(new_board)
+                            node.children.append(new_node)
+                else:
+                    for z in nums_move:
+                        if x + z[0] > 6 or \
+                                y + z[1] > 6 or \
+                                x + z[0] < 1 or \
+                                y + z[1] < 1:
+                            continue
+                        if node.board[x + z[0]][y + z[1]].occupied == 0:
+                            new_board = copy.deepcopy(node.board)
+                            new_board[x][y].occupied = 0
+                            if y + z[1] == 0:
+                                new_board[x + z[0]][y + z[1]].occupied = 2
+                            else:
+                                new_board[x + z[0]][y + z[1]].occupied = 1
+                            new_board[x + z[0]][y + z[1]].team = team
 
-                for z in nums:
-                    if x + z[0] > 6 or \
-                            y + z[1] > 6:
-                        continue
-                    if (node.board[x + z[0]][y + z[1]].occupied != 0
-                            and node.board[x + z[0]][y + z[1]].team != team
-                            and node.board[x + 2 * z[0]][y + 2 * z[1]].occupied == 0):
-                        # bicie jest mozliwe
-                        new_board = node.board.copy()
-                        new_board[x][y].occupied = 0
-                        new_board[x + z[0]][y + z[1]].occupied = 0
-                        if y + 2 * z[1] == 0:
-                            new_board[x + 2 * z[0]][y + 2 * z[1]].occupied = 2
-                        else:
-                            new_board[x + 2 * z[0]][y + 2 * z[1]].occupied = 1
-                        new_board[x + 2 * z[0]][y + 2 * z[1]].team = team
-                        new_node = Node(new_board)
-                        node.children.append(new_node)
-                    elif node.board[x + z[0]][y + z[1]].occupied == 0 and is_bicie is False:
-                        new_board = node.board.copy()
-                        new_board[x][y].occupied = 0
-                        new_board[x + z[0]][y + z[1]].occupied = 0
-                        if y + z[1] == 0:
-                            new_board[x + z[0]][y + z[1]].occupied = 2
-                        else:
-                            new_board[x + z[0]][y + z[1]].occupied = 1
-                        new_board[x + z[0]][y + z[1]].team = team
-
-                        new_node = Node(new_board)
-                        node.children.append(new_node)
+                            new_node = Node(new_board)
+                            node.children.append(new_node)
             '''if node.board[iter1][iter2] == 2:
                 team = node.board[x][y].team
                 for z in nums:
@@ -232,12 +241,19 @@ def possible_outcomes(node):
     return node
 
 
-def wspaniala_funkcja(depth, node):
+def wspaniala_funkcja(depth, node, team):
     if depth == 0:
         return node
-    for x in node.children:
-        x = possible_outcomes(x)
-        node.children.append(wspaniala_funkcja(depth - 1, x))
+    index = 0
+    while index < len(node.children):
+        if team == 1:  # poprzedni ruch - komputer
+            node.children[index] = possible_outcomes(node.children[index], "black")
+            node.children[index] = wspaniala_funkcja(depth - 1, node.children[index], 0)
+        else:
+            node.children[index] = possible_outcomes(node.children[index], "red")
+            node.children[index] = wspaniala_funkcja(depth - 1, node.children[index], 1)
+        index += 1
+    return node
 
 
 def move(w, l, W, L):
@@ -251,12 +267,12 @@ def move(w, l, W, L):
 
 
 def ai(board):
-    depth = 5
-    root = Node(Board)  # od zajaca root
-    root = possible_outcomes(root)
-    root = wspaniala_funkcja(depth, root)
+    depth = 2
+    root = Node(board)  # od zajaca root
+    root = possible_outcomes(root, "red")
+    root = wspaniala_funkcja(depth, root, 1)
 
-    result = minimax(root, depth, 0)
+    result = minimax(root, depth, 1)
 
     for x in root.children:
         for p in x.children:
@@ -430,6 +446,7 @@ while running:
                                 Board[piece[0]][piece[1]].occupied = 0
 
                     marked = [-1, -1]
+                    Board = ai(Board)
 
             gameDisplay.blit(img, (0, 0))
             surface = pygame.Surface([15, 15])
@@ -438,7 +455,6 @@ while running:
             rectangle.x = X
             rectangle.y = Y
             pygame.draw.rect(gameDisplay, (225, 0, 0), rectangle, 0)
-
             board_draw()
 
     pygame.display.update()
