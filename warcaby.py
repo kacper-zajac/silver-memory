@@ -253,7 +253,10 @@ def possible_outcomes(node, team):
                                     newnew_board = copy.deepcopy(new_board)
                                     newnew_board[x + base[0]][y + base[1]].occupied = 2
                                     newnew_board[x + base[0]][y + base[1]].team = team
-
+                                    new_node = Node(newnew_board)
+                                    node.children.append(new_node)
+                                    base[0] += z[0]
+                                    base[1] += z[1]
                             base[0] += z[0]
                             base[1] += z[1]
             y -= 1
@@ -287,7 +290,7 @@ def move(w, l, W, L):
 
 
 def ai(board):
-    depth = 5
+    depth = 3
     root = Node(board)  # od zajaca root
     root = possible_outcomes(root, "red")
     root = wspaniala_funkcja(depth, root, 1)
@@ -299,7 +302,6 @@ def ai(board):
         if child.score is result:
             results.append(child)
     if random.choice(results).combo:
-        print("jest komboo")
         return ai(random.choice(results).board)
     return random.choice(results).board
 
