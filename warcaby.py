@@ -206,18 +206,47 @@ def possible_outcomes(node, team):
                             node.children.append(new_node)
             if (node.board[x][y] == 2
                     and node.board[x][y].team == team):
-                for z in nums:
-                    base = z.copy()
-                    while 1 <= x + base[0] <= 6 and 1 <= y + base[1] <= 6:
-                        if (node.board[x + base[0]][y + base[1]].occupied != 0
-                                and node.board[x + base[0]][y + base[1]].team != team
-                                and node.board[x + base[0] + z[0]][y + base[1] + z[1]].occupied == 0):
-                            break
-                        elif node.board[x + base[0]][y + base[1]].occupied != 0:
-                            break
-                        print(base)
-                        base[0] += z[0]
-                        base[1] += z[1]
+                if is_bicie:
+                    for z in nums:
+                        base = z.copy()
+                        while 1 <= x + base[0] <= 6 \
+                                and 1 <= y + base[1] <= 6:
+                            if (node.board[x + base[0]][y + base[1]].occupied != 0
+                                    and node.board[x + base[0]][y + base[1]].team != team
+                                    and node.board[x + base[0] + z[0]][y + base[1] + z[1]].occupied == 0):
+                                new_board = copy.deepcopy(node.board)
+                                new_board[x][y].occupied = 0
+                                new_board[x + base[0]][y + base[1]].occupied = 0
+                                while (node.board[x + base[0] + z[0]][y + base[1] + z[1]].occupied == 0 and
+                                       1 <= x + base[0] <= 6
+                                       and 1 <= y + base[1] <= 6):
+                                    newnew_board = copy.deepcopy(new_board)
+                                    newnew_board[x + base[0] + z[0]][y + base[1] + z[1]].occupied = 2
+                                    newnew_board[x + base[0] + z[0]][y + base[1] + z[1]].team = team
+                                    new_node = Node(newnew_board)
+                                    node.children.append(new_node)
+                                    base[0] += z[0]
+                                    base[1] += z[1]
+                                break
+                            base[0] += z[0]
+                            base[1] += z[1]
+                else:
+                    for z in nums:
+                        base = z.copy()
+                        while (0 <= x + base[0] <= 0
+                               and 0 <= y + base[1] <= 0):
+                            if node.board[x + base[0]][y + base[1]].occupied != 0:
+                                new_board = copy.deepcopy(node.board)
+                                new_board[x][y].occupied = 0
+                                while (node.board[x + base[0]][y + base[1]].occupied != 0
+                                       and 0 <= x + base[0] <= 7
+                                       and 0 <= y + base[1] <= 7):
+                                    newnew_board = copy.deepcopy(new_board)
+                                    newnew_board[x + base[0]][y + base[1]].occupied = 2
+                                    newnew_board[x + base[0]][y + base[1]].team = team
+
+                            base[0] += z[0]
+                            base[1] += z[1]
             y -= 1
         x -= 1
     return node
