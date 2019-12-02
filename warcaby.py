@@ -2,6 +2,7 @@ import pygame
 import sys
 import statistics
 import copy
+import itertools
 
 
 class Field:
@@ -13,8 +14,9 @@ class Field:
 class Node:
     def __init__(self, board):
         self.children = []
-        self.score = 0
         self.board = board
+        self.score = 0
+
 
     def write(self):
         print("My score: " + str(self.score))
@@ -131,7 +133,7 @@ Board[4][6].team = "red"
 Board[6][6].occupied = 1
 Board[6][6].team = "red"'''
 
-Board[1][5].occupied = 2
+Board[1][5].occupied = 1
 Board[1][5].team = "red"
 Board[3][5].occupied = 1
 Board[3][5].team = "red"
@@ -139,6 +141,105 @@ Board[5][5].occupied = 1
 Board[5][5].team = "red"
 Board[7][5].occupied = 1
 Board[7][5].team = "red"
+
+
+def is_move_available(board, team):
+    nums = [[-1, -1], [-1, 1], [1, -1], [1, 1]]
+
+    for x, y in itertools.product(range(7, -1, -1), range(7, -1, -1)):
+        if board[x][y].occupied == 1 and board[x][y].team == team:
+            for z in nums:
+                if x + z[0] > 6 or \
+                        y + z[1] > 6 or \
+                        x + z[0] < 1 or \
+                        y + z[1] < 1:
+                    continue
+                if (board[x + z[0]][y + z[1]].occupied != 0
+                        and board[x + z[0]][y + z[1]].team != team
+                        and board[x + 2 * z[0]][y + 2 * z[1]].occupied == 0):
+                    return True
+        elif board[x][y].occupied == 2 and board[x][y].team == team:
+            for z in nums:
+                base = z.copy()
+                while 1 <= x + base[0] <= 6 and 1 <= y + base[1] <= 6:
+                    if (board[x + base[0]][y + base[1]].occupied != 0
+                            and board[x + base[0]][y + base[1]].team != team
+                            and board[x + base[0] + z[0]][y + base[1] + z[1]].occupied == 0):
+                        return True
+                    elif board[x + base[0]][y + base[1]].occupied != 0:
+                        break
+                    base[0] += z[0]
+                    base[1] += z[1]
+    return False
+
+
+def possible_outcomes(node):
+    is_bicie = is_move_available(node.board, "red")
+
+
+    nums = [[-1, -1], [-1, 1], [1, -1], [1, 1]]
+    iter1 = 7
+    while iter1 >= 0:
+        iter2 = 7
+        while iter2 >= 0:
+            if node.board[iter1][iter2] == 1:
+                team = node.board[x][y].team
+
+                for z in nums:
+                    if x + z[0] > 6 or \
+                            y + z[1] > 6:
+                        continue
+                    if (node.board[x + z[0]][y + z[1]].occupied != 0
+                            and node.board[x + z[0]][y + z[1]].team != team
+                            and node.board[x + 2 * z[0]][y + 2 * z[1]].occupied == 0):
+                        # bicie jest mozliwe
+                        new_board = node.board.copy()
+                        new_board[x][y].occupied = 0
+                        new_board[x + z[0]][y + z[1]].occupied = 0
+                        if y + 2 * z[1] == 0:
+                            new_board[x + 2 * z[0]][y + 2 * z[1]].occupied = 2
+                        else:
+                            new_board[x + 2 * z[0]][y + 2 * z[1]].occupied = 1
+                        new_board[x + 2 * z[0]][y + 2 * z[1]].team = team
+                        new_node = Node(new_board)
+                        node.children.append(new_node)
+                    elif node.board[x + z[0]][y + z[1]].occupied == 0 and is_bicie is False:
+                        new_board = node.board.copy()
+                        new_board[x][y].occupied = 0
+                        new_board[x + z[0]][y + z[1]].occupied = 0
+                        if y + z[1] == 0:
+                            new_board[x + z[0]][y + z[1]].occupied = 2
+                        else:
+                            new_board[x + z[0]][y + z[1]].occupied = 1
+                        new_board[x + z[0]][y + z[1]].team = team
+
+                        new_node = Node(new_board)
+                        node.children.append(new_node)
+            '''if node.board[iter1][iter2] == 2:
+                team = node.board[x][y].team
+                for z in nums:
+                    base = z.copy()
+                    while 1 <= x + base[0] <= 6 and 1 <= y + base[1] <= 6:
+                        if (node.board[x + base[0]][y + base[1]].occupied != 0
+                                and node.board[x + base[0]][y + base[1]].team != team
+                                and node.board[x + base[0] + z[0]][y + base[1] + z[1]].occupied == 0):
+                            break
+                        elif node.board[x + base[0]][y + base[1]].occupied != 0:
+                            break
+                        print(base)
+                        base[0] += z[0]
+                        base[1] += z[1]'''
+            iter2 -= 1
+        iter1 -= 1
+    return node
+
+
+def wspaniala_funkcja(depth, node):
+    if depth == 0:
+        return node
+    for x in node.children:
+        x = possible_outcomes(x)
+        node.children.append(wspaniala_funkcja(depth - 1, x))
 
 
 def move(w, l, W, L):
@@ -152,50 +253,12 @@ def move(w, l, W, L):
 
 
 def ai(board):
-    depth = 2
+    depth = 5
     root = Node(board)  # od zajaca root
-
-    newboard = copy.deepcopy(board)  # testy
-    newboard[5][5].occupied = 2  #
-    newboard[5][5].team = "black"  #
-
-    newboard2 = copy.deepcopy(board)  # testy
-    newboard2[5][5].occupied = 1  #
-    newboard2[5][5].team = "black"  #
-
-    newboard3 = copy.deepcopy(board)
-    newboard4 = copy.deepcopy(board)
-    newboard5 = copy.deepcopy(board)
-
-    temp4 = Node(newboard4)
-    temp3 = Node(newboard3)
-    temp5 = Node(newboard5)
-
-    newboard3[0][0].occupied = 2
-    newboard3[0][0].team = "black"
-    newboard3[0][1].occupied = 1
-    newboard3[0][1].team = "black"
-
-    newboard4[0][0].occupied = 2
-    newboard4[0][0].team = "black"
-    newboard4[0][1].occupied = 2
-    newboard4[0][1].team = "black"
-
-    newboard5[0][0].occupied = 2
-    newboard5[0][0].team = "red"
-    newboard5[0][1].occupied = 1
-    newboard5[0][1].team = "red"
-
-    temp = Node(newboard)
-    temp2 = Node(newboard2)
-    root.children.append(temp2)
-    root.children.append(temp)
-
-    root.children[0].children.append(temp4)
-    root.children[0].children.append(temp3)
-    root.children[1].children.append(temp5)
-
-    # koniec testow
+    print(root.board, "chuj")
+    print("chujjjj")
+    root = possible_outcomes(root)
+    root = wspaniala_funkcja(depth, root)
 
     result = minimax(root, depth, 0)
 
@@ -211,26 +274,6 @@ def ai(board):
 
 
 ai(Board)
-
-# zeby lepiej wygladalo ale nie pyka coś
-'''                                 
-def handle_space(x, y, w, l):
-    if Board[x][y].occupied == 1 or Board[x][y].occupied == 2:
-        if w < 0:
-            return [x, y]
-    else:
-        if w > -1 and abs(w - x) == 1 and abs(l - y) == 1:
-            move(w, l, x, y)
-            return [-1, -1]
-        elif w > -1 and abs(w - x) == 2 and abs(l - y) == 2 and Board[int((l + x) / 2)][int((l + y) / 2)].team != Board[w][l].team:  # bicie
-            Board[int((w + x) / 2)][int((l + y) / 2)].occupied = False
-            #print(statistics.mean([w, x]))  # !!
-            move(w, l, x, y)
-            return [-1, -1]
-        else:
-            return [-1, -1]
-    return [-1, -1]
-'''
 
 pygame.init()
 
@@ -289,80 +332,6 @@ def board_draw():
 
 marked = [-1, -1]  # nothing marked, value less than 0
 
-
-def check_available_moves(board, x, y):
-    team = board[x][y].team
-    nums = [[-1, -1], [-1, 1], [1, -1], [1, 1]]
-    moves = 0
-    if board[x][y].occupied == 1:
-        for z in nums:
-            if x + z[0] > 6 or \
-                    y + z[1] > 6:
-                continue
-            if (board[x + z[0]][y + z[1]].occupied != 0
-                    and board[x + z[0]][y + z[1]].team != team
-                    and board[x + 2 * z[0]][y + 2 * z[1]].occupied == 0):
-                moves += 1
-    elif board[x][y].occupied == 2:
-        for z in nums:
-            base = z.copy()
-            while 1 <= x + base[0] <= 6 and 1 <= y + base[1] <= 6:
-                if (board[x + base[0]][y + base[1]].occupied != 0
-                        and board[x + base[0]][y + base[1]].team != team
-                        and board[x + base[0] + z[0]][y + base[1] + z[1]].occupied == 0):
-                    moves += 1
-                    break
-                elif board[x + base[0]][y + base[1]].occupied != 0:
-                    break
-                print(base)
-                base[0] += z[0]
-                base[1] += z[1]
-    return moves
-
-
-
-def possible_outcomes():
-    tree = GameTree(Board, None)
-    iter1 = 8
-    iter2 = 8
-    nums = [[-1, -1], [-1, 1], [1, -1], [1, 1]]
-    while iter1 >= 0:
-        while iter2 >= 0:
-            if Board[iter1][iter2] == 1:
-                team = Board[x][y].team
-                for z in nums:
-                    if x + z[0] > 6 or \
-                            y + z[1] > 6:
-                        continue
-                    if (Board[x + z[0]][y + z[1]].occupied != 0
-                            and Board[x + z[0]][y + z[1]].team != team
-                            and Board[x + 2 * z[0]][y + 2 * z[1]].occupied == 0):
-                        new_board = Board.copy()
-                        new_board[x][y].occupied = 0
-                        new_board[x + z[0]][y + z[1]].occupied = 0
-                        new_board[x + 2 * z[0]][y + 2 * z[1]].occupied = 1
-                        new_board[x + 2 * z[0]][y + 2 * z[1]].team = team
-
-
-                        tree.children.append(new_board)
-                    elif Board[x + z[0]][y + z[1]].occupied == 0:
-                        pass  # rusz sie i evaluate i zapisz
-            if Board[iter1][
-                iter2] == 2:  # nie no typie damka to koniec przecież tu każdy ruch możliwy to dodatkowa plansza
-                team = Board[x][y].team
-                for z in nums:
-                    base = z.copy()
-                    while 1 <= x + base[0] <= 6 and 1 <= y + base[1] <= 6:
-                        if (Board[x + base[0]][y + base[1]].occupied != 0
-                                and Board[x + base[0]][y + base[1]].team != team
-                                and Board[x + base[0] + z[0]][y + base[1] + z[1]].occupied == 0):
-                            break
-                        elif Board[x + base[0]][y + base[1]].occupied != 0:
-                            break
-                        print(base)
-                        base[0] += z[0]
-                        base[1] += z[1]
-
 board_draw()
 while running:
 
@@ -388,7 +357,6 @@ while running:
                     Y = Y - 88
             elif event.key == pygame.K_SPACE:
                 if Board[x][y].occupied == 1 or Board[x][y].occupied == 2:
-                    print(check_available_moves(Board, x, y), x, y)
                     marked = [x, y]
                 else:
                     if (marked[0] > -1 and
