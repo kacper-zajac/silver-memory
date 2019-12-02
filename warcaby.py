@@ -316,7 +316,6 @@ y = 0
 
 pygame.font.init()  # you have to call this at the start,
 # if you want to use this module.
-myfont = pygame.font.SysFont('Times New Roman', 13)
 
 rectangle.x = X  # położenie kwadracika
 rectangle.y = Y
@@ -328,18 +327,15 @@ def board_draw():
         for t in range(8):
             if Board[p][t].occupied == 0:
                 continue
-            textsurface = myfont.render((str(Board[p][t].occupied) + Board[p][t].team), 1, (0, 0, 0))
-            gameDisplay.blit(textsurface, (19 + p * 88, 704 - t * 88 - 65))
-            '''if Board[p][t].occupied == 1:
+            if Board[p][t].occupied == 1:
                 if Board[p][t].team == "black":
                     gameDisplay.blit(pionek, (19 + p * 88, 704 - t * 88 - 65))
-                    gameDisplay.blit(textsurface, (19 + p * 88, 704 - t * 88 - 65))
 
                 else:
                     gameDisplay.blit(pionekred, (19 + p * 88, 704 - t * 88 - 65))
             elif Board[p][t].occupied == 2:
                 gameDisplay.blit(damka, (19 + p * 88, 704 - t * 88 - 65))
-    '''
+
 
 
 marked = [-1, -1]  # nothing marked, value less than 0
