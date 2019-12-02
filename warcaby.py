@@ -77,7 +77,7 @@ def minimax(node, depth, alpha, beta, maximize):
 
 Board = [[Field() for x in range(8)] for y in range(8)]
 
-Board[0][0].occupied = 1  # ustawianie pionków
+'''Board[0][0].occupied = 1  # ustawianie pionków
 Board[2][0].occupied = 1
 Board[4][0].occupied = 1
 Board[6][0].occupied = 1
@@ -91,8 +91,18 @@ Board[0][2].occupied = 1
 Board[2][2].occupied = 1
 Board[4][2].occupied = 1
 Board[6][2].occupied = 1
+'''
 
-Board[1][7].occupied = 1
+Board[7][3].occupied = 2
+Board[7][3].team = "red"
+Board[6][4].occupied = 1
+Board[6][4].occupied = 1
+Board[4][4].occupied = 1
+Board[2][4].occupied = 1
+Board[2][2].occupied = 1
+
+
+'''Board[1][7].occupied = 1
 Board[1][7].team = "red"
 Board[3][7].occupied = 1
 Board[3][7].team = "red"
@@ -118,6 +128,7 @@ Board[5][5].occupied = 1
 Board[5][5].team = "red"
 Board[7][5].occupied = 1
 Board[7][5].team = "red"
+'''
 
 
 def is_move_available_from_pos(board, team, x, y):
@@ -156,7 +167,7 @@ def is_move_available(board, team):
 
 
 def possible_outcomes(node, team):
-    is_bicie = is_move_available(node.board, team)
+    is_move = is_move_available(node.board, team)
     nums = [[-1, -1], [-1, 1], [1, -1], [1, 1]]
     nums_move = []
     if team == "black":
@@ -169,7 +180,7 @@ def possible_outcomes(node, team):
         while y >= 0:
             if (node.board[x][y].occupied == 1
                     and node.board[x][y].team == team):
-                if is_bicie:
+                if is_move:
                     for z in nums:
                         if x + z[0] > 6 or \
                                 y + z[1] > 6 or \
@@ -177,9 +188,10 @@ def possible_outcomes(node, team):
                                 y + z[1] < 1:
                             continue
                         if (node.board[x + z[0]][y + z[1]].occupied != 0
-                                and node.board[x + z[0]][y + z[1]].team != team
-                                and node.board[x + 2 * z[0]][y + 2 * z[1]].occupied == 0):
-                            # bicie jest mozliwe
+                                and node.board[x + z[0]][y + z[1]].team != team):
+                            if node.board[x + 2 * z[0]][y + 2 * z[1]].occupied == 0:
+                                break
+                            # move jest mozliwe
                             new_board = copy.deepcopy(node.board)
                             new_board[x][y].occupied = 0
                             new_board[x + z[0]][y + z[1]].occupied = 0
@@ -189,7 +201,7 @@ def possible_outcomes(node, team):
                                 new_board[x + 2 * z[0]][y + 2 * z[1]].occupied = 1
                             new_board[x + 2 * z[0]][y + 2 * z[1]].team = team
                             new_node = Node(new_board)
-                            if is_move_available_from_pos(new_board, "red", x + 2 * z[0], y + 2 * z[1]):
+                            if is_move_available_from_pos(new_board, team, x + 2 * z[0], y + 2 * z[1]):
                                 new_node.combo = True
                             node.children.append(new_node)
                 else:
@@ -210,9 +222,9 @@ def possible_outcomes(node, team):
 
                             new_node = Node(new_board)
                             node.children.append(new_node)
-            if (node.board[x][y] == 2
+            elif (node.board[x][y].occupied == 2
                     and node.board[x][y].team == team):
-                if is_bicie:
+                if is_move:
                     for z in nums:
                         base = z.copy()
                         while 1 <= x + base[0] <= 6 \
@@ -223,14 +235,15 @@ def possible_outcomes(node, team):
                                 new_board = copy.deepcopy(node.board)
                                 new_board[x][y].occupied = 0
                                 new_board[x + base[0]][y + base[1]].occupied = 0
-                                while (node.board[x + base[0] + z[0]][y + base[1] + z[1]].occupied == 0 and
-                                       1 <= x + base[0] <= 6
-                                       and 1 <= y + base[1] <= 6):
+                                while (1 <= x + base[0] <= 6
+                                       and 1 <= y + base[1] <= 6
+                                       and node.board[x + base[0] + z[0]][y + base[1] + z[1]].occupied == 0):
                                     newnew_board = copy.deepcopy(new_board)
                                     newnew_board[x + base[0] + z[0]][y + base[1] + z[1]].occupied = 2
                                     newnew_board[x + base[0] + z[0]][y + base[1] + z[1]].team = team
                                     new_node = Node(newnew_board)
-                                    if is_move_available_from_pos(newnew_board, "red", x + base[0] + z[0], y + base[1] + z[1]):
+                                    if is_move_available_from_pos(newnew_board, team, x + base[0] + z[0],
+                                                                  y + base[1] + z[1]):
                                         new_node.combo = True
                                     node.children.append(new_node)
                                     base[0] += z[0]
@@ -244,12 +257,12 @@ def possible_outcomes(node, team):
                         base = z.copy()
                         while (0 <= x + base[0] <= 7
                                and 0 <= y + base[1] <= 7):
-                            if node.board[x + base[0]][y + base[1]].occupied != 0:
+                            if node.board[x + base[0]][y + base[1]].occupied == 0:
                                 new_board = copy.deepcopy(node.board)
                                 new_board[x][y].occupied = 0
-                                while (node.board[x + base[0]][y + base[1]].occupied != 0
-                                       and 0 <= x + base[0] <= 7
-                                       and 0 <= y + base[1] <= 7):
+                                while (0 <= x + base[0] <= 7
+                                       and 0 <= y + base[1] <= 7
+                                       and node.board[x + base[0]][y + base[1]].occupied == 0):
                                     newnew_board = copy.deepcopy(new_board)
                                     newnew_board[x + base[0]][y + base[1]].occupied = 2
                                     newnew_board[x + base[0]][y + base[1]].team = team
@@ -269,12 +282,20 @@ def wspaniala_funkcja(depth, node, team):
         return node
     index = 0
     while index < len(node.children):
-        if team == 1 and not node.children[index].combo:  # poprzedni ruch - komputer
-            node.children[index] = possible_outcomes(node.children[index], "black")
-            node.children[index] = wspaniala_funkcja(depth - 1, node.children[index], 0)
+        if node.children[index].combo:
+            if team == 0:  # poprzedni ruch - gracz
+                node.children[index] = possible_outcomes(node.children[index], "black")
+                node.children[index] = wspaniala_funkcja(depth - 1, node.children[index], 0)
+            else:
+                node.children[index] = possible_outcomes(node.children[index], "red")
+                node.children[index] = wspaniala_funkcja(depth - 1, node.children[index], 1)
         else:
-            node.children[index] = possible_outcomes(node.children[index], "red")
-            node.children[index] = wspaniala_funkcja(depth - 1, node.children[index], 1)
+            if team == 1:  # poprzedni ruch - komputer
+                node.children[index] = possible_outcomes(node.children[index], "black")
+                node.children[index] = wspaniala_funkcja(depth - 1, node.children[index], 0)
+            else:
+                node.children[index] = possible_outcomes(node.children[index], "red")
+                node.children[index] = wspaniala_funkcja(depth - 1, node.children[index], 1)
         index += 1
     return node
 
@@ -290,7 +311,7 @@ def move(w, l, W, L):
 
 
 def ai(board):
-    depth = 3
+    depth = 4
     root = Node(board)  # od zajaca root
     root = possible_outcomes(root, "red")
     root = wspaniala_funkcja(depth, root, 1)
@@ -301,6 +322,8 @@ def ai(board):
     for child in root.children:
         if child.score is result:
             results.append(child)
+    if len(results) == 0:
+        return
     if random.choice(results).combo:
         return ai(random.choice(results).board)
     return random.choice(results).board
@@ -341,6 +364,20 @@ rectangle.y = Y
 pygame.draw.rect(gameDisplay, (225, 0, 0), rectangle, 0)
 
 
+def is_lose():
+    for x, y in itertools.product(range(7, -1, -1), range(7, -1, -1)):
+        if Board[x][y].occupied != 0 and Board[x][y].team == "black":
+            return False
+    return True
+
+
+def is_win():
+    for x, y in itertools.product(range(8), range(8)):
+        if Board[x][y].occupied != 0 and Board[x][y].team == "red":
+            return False
+    return True
+
+
 def board_draw():
     for p in range(8):  # display pionkis
         for t in range(8):
@@ -362,8 +399,6 @@ board_draw()
 while running:
     bicie = False
     for event in pygame.event.get():
-        print(marked)
-        print(is_move_available_from_pos(Board, "black", x, y))
         ai_move = False
         if event.type == pygame.QUIT:
             running = False
@@ -385,98 +420,122 @@ while running:
                     y = y + 1
                     Y = Y - 88
             elif event.key == pygame.K_SPACE:
-                    if Board[x][y].occupied == 1 or Board[x][y].occupied == 2:
-                        if Board[x][y].team == "black":
-                            if not bicie:
-                                if is_move_available(Board, "black"):
-                                    if is_move_available_from_pos(Board, "black", x, y):
-                                        marked = [x, y]
-                                else:
-                                    marked = [x, y]
-                    else:
-                        if (marked[0] > -1 and
-                                abs(marked[0] - x) == 1 and
-                                abs(marked[1] - y) == 1 and
-                                Board[marked[0]][marked[1]].occupied == 1 and
-                                not is_move_available_from_pos(Board, "black", marked[0], marked[1])):
-                            # jeśli pion jest zaznaczony, a odległość == tylko 1 od nowego x,y ->
-                            # -> przesuwamy sie na nowe pole
-                            if Board[marked[0]][marked[1]].team == "black" and marked[1] - y == -1:
-                                move(marked[0], marked[1], x, y)
-                            ai_move = True
-                        elif (marked[0] > -1 and
-                              abs(marked[0] - x) == 2 and
-                              abs(marked[1] - y) == 2 and
-                              Board[int((marked[0] + x) / 2)][int((marked[1] + y) / 2)].occupied != 0 and
-                              Board[int((marked[0] + x) / 2)][int((marked[1] + y) / 2)].team
-                              != Board[marked[0]][marked[1]].team):  # bicie
-                            # jeśli pion jest zaznaczony, x,y odległe są o dwa pola od zaznaczenia,
-                            # w sredniej arytmetycznej jest przeciwnik -> mozna bic
-                            Board[int((marked[0] + x) / 2)][int((marked[1] + y) / 2)].occupied = 0
-                            move(marked[0], marked[1], x, y)
-                            bicie = False
-                            ai_move = True
-                            if is_move_available_from_pos(Board, "black", x, y):
-                                marked[0] = x
-                                marked[1] = y
-                                bicie = True
-                                ai_move = False
-
-                        elif (marked[0] > -1 and
-                              abs(marked[0] - x) == abs(marked[1] - y) and
-                              Board[marked[0]][marked[1]].occupied == 2):
-                            # jesli porusza sie po skosie i jest damka
-
-                            marked_x = marked[0]
-                            marked_y = marked[1]
-                            x_is_increasing = False
-                            y_is_increasing = False
-
-                            if marked[0] > x:
-                                marked_x -= 1
-                            else:
-                                x_is_increasing = True
-                                marked_x += 1
-
-                            if marked[1] > y:
-                                marked_y -= 1
-                            else:
-                                marked_y += 1
-                                y_is_increasing = True
-
-                            is_a_piece = False
-                            too_many_pieces = False
-                            own_team = False
-                            piece = [0, 0]
-                            while marked_x != x:
-                                if Board[marked_x][marked_y].occupied != 0:
-                                    if Board[marked_x][marked_y].team == Board[marked[0]][marked[1]].team:
-                                        own_team = True
-                                        break
-                                    elif is_a_piece:
-                                        too_many_pieces = True
-                                        break
-                                    is_a_piece = True
-                                    piece = marked_x, marked_y
-                                if x_is_increasing:
-                                    marked_x += 1
-                                else:
-                                    marked_x -= 1
-                                if y_is_increasing:
-                                    marked_y += 1
-                                else:
-                                    marked_y -= 1
-
-                            if not own_team:
-                                if not is_a_piece:
-                                    move(marked[0], marked[1], x, y)
-                                elif not too_many_pieces:
-                                    move(marked[0], marked[1], x, y)
-                                    Board[piece[0]][piece[1]].occupied = 0
+                if Board[x][y].occupied == 1 or Board[x][y].occupied == 2:
+                    if Board[x][y].team == "black":
                         if not bicie:
-                            marked = [-1, -1]
-                            if ai_move:
-                                Board = ai(Board)
+                            if is_move_available(Board, "black"):
+                                if is_move_available_from_pos(Board, "black", x, y):
+                                    marked = [x, y]
+                            else:
+                                marked = [x, y]
+                else:
+                    if (marked[0] > -1 and
+                            abs(marked[0] - x) == 1 and
+                            abs(marked[1] - y) == 1 and
+                            Board[marked[0]][marked[1]].occupied == 1 and
+                            not is_move_available_from_pos(Board, "black", marked[0], marked[1])):
+                        # jeśli pion jest zaznaczony, a odległość == tylko 1 od nowego x,y ->
+                        # -> przesuwamy sie na nowe pole
+                        if Board[marked[0]][marked[1]].team == "black" and marked[1] - y == -1:
+                            move(marked[0], marked[1], x, y)
+                            ai_move = True
+                    elif (marked[0] > -1 and
+                          abs(marked[0] - x) == 2 and
+                          abs(marked[1] - y) == 2 and
+                          Board[int((marked[0] + x) / 2)][int((marked[1] + y) / 2)].occupied != 0 and
+                          Board[int((marked[0] + x) / 2)][int((marked[1] + y) / 2)].team
+                          != Board[marked[0]][marked[1]].team):  # bicie
+                        # jeśli pion jest zaznaczony, x,y odległe są o dwa pola od zaznaczenia,
+                        # w sredniej arytmetycznej jest przeciwnik -> mozna bic
+                        Board[int((marked[0] + x) / 2)][int((marked[1] + y) / 2)].occupied = 0
+                        move(marked[0], marked[1], x, y)
+                        bicie = False
+                        ai_move = True
+                        if is_move_available_from_pos(Board, "black", x, y):
+                            marked[0] = x
+                            marked[1] = y
+                            bicie = True
+                            ai_move = False
+
+                    elif (marked[0] > -1 and
+                          abs(marked[0] - x) == abs(marked[1] - y) and
+                          Board[marked[0]][marked[1]].occupied == 2):
+                        # jesli porusza sie po skosie i jest damka
+
+                        marked_x = marked[0]
+                        marked_y = marked[1]
+                        x_is_increasing = False
+                        y_is_increasing = False
+
+                        if marked[0] > x:
+                            marked_x -= 1
+                        else:
+                            x_is_increasing = True
+                            marked_x += 1
+
+                        if marked[1] > y:
+                            marked_y -= 1
+                        else:
+                            marked_y += 1
+                            y_is_increasing = True
+
+                        is_a_piece = False
+                        too_many_pieces = False
+                        own_team = False
+                        piece = [0, 0]
+                        while marked_x != x:
+                            if Board[marked_x][marked_y].occupied != 0:
+                                if Board[marked_x][marked_y].team == Board[marked[0]][marked[1]].team:
+                                    own_team = True
+                                    break
+                                elif is_a_piece:
+                                    too_many_pieces = True
+                                    break
+                                is_a_piece = True
+                                piece = marked_x, marked_y
+                            if x_is_increasing:
+                                marked_x += 1
+                            else:
+                                marked_x -= 1
+                            if y_is_increasing:
+                                marked_y += 1
+                            else:
+                                marked_y -= 1
+                        bicie = False
+                        ai_move = True
+                        if not own_team:
+                            if not is_a_piece:
+                                move(marked[0], marked[1], x, y)
+                            elif not too_many_pieces:
+                                move(marked[0], marked[1], x, y)
+                                Board[piece[0]][piece[1]].occupied = 0
+                                if is_move_available_from_pos(Board, "black", x, y):
+                                    marked[0] = x
+                                    marked[1] = y
+                                    bicie = True
+                                    ai_move = False
+
+                    gameDisplay.blit(img, (0, 0))
+                    surface = pygame.Surface([15, 15])
+                    surface.fill((225, 0, 0))
+                    rectangle = surface.get_rect()
+                    rectangle.x = X
+                    rectangle.y = Y
+                    pygame.draw.rect(gameDisplay, (225, 0, 0), rectangle, 0)
+                    board_draw()
+                    pygame.display.update()
+                    if is_win():
+                        print("koniec zwyciestwo")
+                        running = False
+                        break
+                    if not bicie:
+                        marked = [-1, -1]
+                        if ai_move:
+                            Board = ai(Board)
+                            if Board is None or is_lose():
+                                print("koniec przegrana")
+                                running = False
+                                break
 
             gameDisplay.blit(img, (0, 0))
             surface = pygame.Surface([15, 15])
