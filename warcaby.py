@@ -1,6 +1,5 @@
 import pygame
-import sys
-import statistics
+import random
 import copy
 import itertools
 
@@ -77,21 +76,21 @@ def minimax(node, depth, alpha, beta, maximize):
 
 Board = [[Field() for x in range(8)] for y in range(8)]
 
-'''Board[0][0].occupied = 1  # ustawianie pionków
+Board[0][0].occupied = 1  # ustawianie pionków
 Board[2][0].occupied = 1
 Board[4][0].occupied = 1
 Board[6][0].occupied = 1
-'''
+
 Board[1][1].occupied = 1
 Board[3][1].occupied = 1
 Board[5][1].occupied = 1
 Board[7][1].occupied = 1
-'''
+
 Board[0][2].occupied = 1
 Board[2][2].occupied = 1
 Board[4][2].occupied = 1
 Board[6][2].occupied = 1
-'''
+
 Board[1][7].occupied = 1
 Board[1][7].team = "red"
 Board[3][7].occupied = 1
@@ -203,8 +202,8 @@ def possible_outcomes(node, team):
 
                             new_node = Node(new_board)
                             node.children.append(new_node)
-            '''if node.board[iter1][iter2] == 2:
-                team = node.board[x][y].team
+            if (node.board[x][y] == 2
+                    and node.board[x][y].team == team):
                 for z in nums:
                     base = z.copy()
                     while 1 <= x + base[0] <= 6 and 1 <= y + base[1] <= 6:
@@ -216,7 +215,7 @@ def possible_outcomes(node, team):
                             break
                         print(base)
                         base[0] += z[0]
-                        base[1] += z[1]'''
+                        base[1] += z[1]
             y -= 1
         x -= 1
     return node
@@ -253,11 +252,16 @@ def ai(board):
     root = possible_outcomes(root, "red")
     root = wspaniala_funkcja(depth, root, 1)
 
-    result = minimax(root, depth, -2, 2, 1)
+    result = minimax(root, depth, -10000, 10000, 0)
 
+    results = []
     for child in root.children:
         if child.score is result:
-            return child.board
+            results.append(child)
+
+    return random.choice(results).board
+
+
 
 
 ai(Board)
