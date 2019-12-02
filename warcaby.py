@@ -1,3 +1,4 @@
+import sys
 import pygame
 import random
 import copy
@@ -93,14 +94,12 @@ Board[4][2].occupied = 1
 Board[6][2].occupied = 1
 '''
 
-Board[7][3].occupied = 2
+Board[7][3].occupied = 1
 Board[7][3].team = "red"
 Board[6][4].occupied = 1
-Board[6][4].occupied = 1
+Board[6][2].occupied = 1
 Board[4][4].occupied = 1
 Board[2][4].occupied = 1
-Board[2][2].occupied = 1
-
 
 '''Board[1][7].occupied = 1
 Board[1][7].team = "red"
@@ -223,7 +222,7 @@ def possible_outcomes(node, team):
                             new_node = Node(new_board)
                             node.children.append(new_node)
             elif (node.board[x][y].occupied == 2
-                    and node.board[x][y].team == team):
+                  and node.board[x][y].team == team):
                 if is_move:
                     for z in nums:
                         base = z.copy()
@@ -310,8 +309,7 @@ def move(w, l, W, L):
         Board[W][L].occupied = 2
 
 
-def ai(board):
-    depth = 4
+def ai(board, depth):
     root = Node(board)  # od zajaca root
     root = possible_outcomes(root, "red")
     root = wspaniala_funkcja(depth, root, 1)
@@ -325,8 +323,22 @@ def ai(board):
     if len(results) == 0:
         return
     if random.choice(results).combo:
-        return ai(random.choice(results).board)
+        return ai(random.choice(results).board, depth)
     return random.choice(results).board
+
+
+def is_lose():
+    for x, y in itertools.product(range(7, -1, -1), range(7, -1, -1)):
+        if Board[x][y].occupied != 0 and Board[x][y].team == "black":
+            return False
+    return True
+
+
+def is_win():
+    for x, y in itertools.product(range(8), range(8)):
+        if Board[x][y].occupied != 0 and Board[x][y].team == "red":
+            return False
+    return True
 
 
 pygame.init()
@@ -343,9 +355,6 @@ pionekred = pygame.image.load("pionekred.png")
 gameDisplay.blit(img, (0, 0))
 running = True
 
-# filled_rect = pygame.Rect(44, 660, 15, 15)
-# pygame.draw.rect(gameDisplay, (0, 0, 0), filled_rect)
-
 surface = pygame.Surface([15, 15])  # wymiary kwadracika
 surface.fill((225, 0, 0))  # czerwony
 rectangle = surface.get_rect()
@@ -356,26 +365,9 @@ Y = 680  # 704 - m*88
 x = 0  # coordinates
 y = 0
 
-pygame.font.init()  # you have to call this at the start,
-# if you want to use this module.
-
 rectangle.x = X  # położenie kwadracika
 rectangle.y = Y
 pygame.draw.rect(gameDisplay, (225, 0, 0), rectangle, 0)
-
-
-def is_lose():
-    for x, y in itertools.product(range(7, -1, -1), range(7, -1, -1)):
-        if Board[x][y].occupied != 0 and Board[x][y].team == "black":
-            return False
-    return True
-
-
-def is_win():
-    for x, y in itertools.product(range(8), range(8)):
-        if Board[x][y].occupied != 0 and Board[x][y].team == "red":
-            return False
-    return True
 
 
 def board_draw():
@@ -531,8 +523,11 @@ while running:
                     if not bicie:
                         marked = [-1, -1]
                         if ai_move:
-                            Board = ai(Board)
-                            if Board is None or is_lose():
+                            Board = ai(Board, 4)
+                            if Board is None:
+                                print("SSSSSSSSSSSSSSSSS")
+                                break
+                            if is_lose():
                                 print("koniec przegrana")
                                 running = False
                                 break
