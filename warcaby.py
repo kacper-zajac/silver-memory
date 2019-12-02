@@ -32,7 +32,7 @@ class Node:
                 elif self.board[p][t].occupied == 1:
                     score += 7
                 elif self.board[p][t].occupied == 2:
-                    score += 100
+                    score += 36
 
         for p in range(8):
             for t in range(8):
@@ -43,7 +43,7 @@ class Node:
                 elif self.board[p][t].occupied == 1:
                     score -= 7
                 elif self.board[p][t].occupied == 2:
-                    score -= 100
+                    score -= 36
         self.score = score
         return score
 
@@ -55,21 +55,23 @@ def minimax(node, depth, alpha, beta, maximize):
     if maximize == 1:
         maxEval = -1000000
         for child in node.children:
-            eval = minimax(child, depth - 1, -2, 2, 0)
+            eval = minimax(child, depth - 1, alpha, beta, 0)
             maxEval = max(maxEval, eval)
             node.score = maxEval
             alpha = max(alpha, eval)
             if beta <= alpha:
+                print("odcinanko")
                 break
         return maxEval
     elif maximize == 0:
         minEval = 1000000
         for child in node.children:
-            eval = minimax(child, depth - 1, -2, 2, 1)
+            eval = minimax(child, depth - 1, alpha, beta, 1)
             minEval = min(minEval, eval)
             node.score = minEval
             beta = min(beta, eval)
             if beta <= alpha:
+                print("odcinanko")
                 break
         return minEval
 
@@ -260,11 +262,6 @@ def ai(board):
             results.append(child)
 
     return random.choice(results).board
-
-
-
-
-ai(Board)
 
 pygame.init()
 
