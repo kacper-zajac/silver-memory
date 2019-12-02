@@ -60,6 +60,7 @@ def minimax(node, depth, alpha, beta, maximize):
             node.score = maxEval
             alpha = max(alpha, eval)
             if beta <= alpha:
+                print("odcinanko")
                 break
         return maxEval
     elif maximize == 0:
@@ -70,6 +71,7 @@ def minimax(node, depth, alpha, beta, maximize):
             node.score = minEval
             beta = min(beta, eval)
             if beta <= alpha:
+                print("odcinanko")
                 break
         return minEval
 
@@ -289,9 +291,6 @@ def ai(board):
             results.append(child)
 
     return random.choice(results).board
-
-
-ai(Board)
 
 pygame.init()
 
