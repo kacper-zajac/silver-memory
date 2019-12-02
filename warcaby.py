@@ -32,7 +32,7 @@ class Node:
                 elif self.board[p][t].occupied == 1:
                     score += 7
                 elif self.board[p][t].occupied == 2:
-                    score += 100
+                    score += 36
 
         for p in range(8):
             for t in range(8):
@@ -43,7 +43,7 @@ class Node:
                 elif self.board[p][t].occupied == 1:
                     score -= 7
                 elif self.board[p][t].occupied == 2:
-                    score -= 100
+                    score -= 36
         self.score = score
         return score
 
@@ -55,7 +55,7 @@ def minimax(node, depth, alpha, beta, maximize):
     if maximize == 1:
         maxEval = -1000000
         for child in node.children:
-            eval = minimax(child, depth - 1, -2, 2, 0)
+            eval = minimax(child, depth - 1, alpha, beta, 0)
             maxEval = max(maxEval, eval)
             node.score = maxEval
             alpha = max(alpha, eval)
@@ -65,7 +65,7 @@ def minimax(node, depth, alpha, beta, maximize):
     elif maximize == 0:
         minEval = 1000000
         for child in node.children:
-            eval = minimax(child, depth - 1, -2, 2, 1)
+            eval = minimax(child, depth - 1, alpha, beta, 1)
             minEval = min(minEval, eval)
             node.score = minEval
             beta = min(beta, eval)
@@ -204,18 +204,47 @@ def possible_outcomes(node, team):
                             node.children.append(new_node)
             if (node.board[x][y] == 2
                     and node.board[x][y].team == team):
-                for z in nums:
-                    base = z.copy()
-                    while 1 <= x + base[0] <= 6 and 1 <= y + base[1] <= 6:
-                        if (node.board[x + base[0]][y + base[1]].occupied != 0
-                                and node.board[x + base[0]][y + base[1]].team != team
-                                and node.board[x + base[0] + z[0]][y + base[1] + z[1]].occupied == 0):
-                            break
-                        elif node.board[x + base[0]][y + base[1]].occupied != 0:
-                            break
-                        print(base)
-                        base[0] += z[0]
-                        base[1] += z[1]
+                if is_bicie:
+                    for z in nums:
+                        base = z.copy()
+                        while 1 <= x + base[0] <= 6 \
+                                and 1 <= y + base[1] <= 6:
+                            if (node.board[x + base[0]][y + base[1]].occupied != 0
+                                    and node.board[x + base[0]][y + base[1]].team != team
+                                    and node.board[x + base[0] + z[0]][y + base[1] + z[1]].occupied == 0):
+                                new_board = copy.deepcopy(node.board)
+                                new_board[x][y].occupied = 0
+                                new_board[x + base[0]][y + base[1]].occupied = 0
+                                while (node.board[x + base[0] + z[0]][y + base[1] + z[1]].occupied == 0 and
+                                       1 <= x + base[0] <= 6
+                                       and 1 <= y + base[1] <= 6):
+                                    newnew_board = copy.deepcopy(new_board)
+                                    newnew_board[x + base[0] + z[0]][y + base[1] + z[1]].occupied = 2
+                                    newnew_board[x + base[0] + z[0]][y + base[1] + z[1]].team = team
+                                    new_node = Node(newnew_board)
+                                    node.children.append(new_node)
+                                    base[0] += z[0]
+                                    base[1] += z[1]
+                                break
+                            base[0] += z[0]
+                            base[1] += z[1]
+                else:
+                    for z in nums:
+                        base = z.copy()
+                        while (0 <= x + base[0] <= 0
+                               and 0 <= y + base[1] <= 0):
+                            if node.board[x + base[0]][y + base[1]].occupied != 0:
+                                new_board = copy.deepcopy(node.board)
+                                new_board[x][y].occupied = 0
+                                while (node.board[x + base[0]][y + base[1]].occupied != 0
+                                       and 0 <= x + base[0] <= 7
+                                       and 0 <= y + base[1] <= 7):
+                                    newnew_board = copy.deepcopy(new_board)
+                                    newnew_board[x + base[0]][y + base[1]].occupied = 2
+                                    newnew_board[x + base[0]][y + base[1]].team = team
+
+                            base[0] += z[0]
+                            base[1] += z[1]
             y -= 1
         x -= 1
     return node
@@ -260,8 +289,6 @@ def ai(board):
             results.append(child)
 
     return random.choice(results).board
-
-
 
 
 ai(Board)
