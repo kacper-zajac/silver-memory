@@ -15,6 +15,7 @@ class Node:
         self.children = []
         self.board = board
         self.score = 0
+        self.combo = False
 
     def write(self):
         print("My score: " + str(self.score))
@@ -188,6 +189,8 @@ def possible_outcomes(node, team):
                                 new_board[x + 2 * z[0]][y + 2 * z[1]].occupied = 1
                             new_board[x + 2 * z[0]][y + 2 * z[1]].team = team
                             new_node = Node(new_board)
+                            if is_move_available_from_pos(new_board, "red", x + 2 * z[0], y + 2 * z[1]):
+                                new_node.combo = True
                             node.children.append(new_node)
                 else:
                     for z in nums_move:
@@ -227,9 +230,12 @@ def possible_outcomes(node, team):
                                     newnew_board[x + base[0] + z[0]][y + base[1] + z[1]].occupied = 2
                                     newnew_board[x + base[0] + z[0]][y + base[1] + z[1]].team = team
                                     new_node = Node(newnew_board)
+                                    if is_move_available_from_pos(newnew_board, "red", x + base[0] + z[0], y + base[1] + z[1]):
+                                        new_node.combo = True
                                     node.children.append(new_node)
                                     base[0] += z[0]
                                     base[1] += z[1]
+
                                 break
                             base[0] += z[0]
                             base[1] += z[1]
@@ -260,7 +266,7 @@ def wspaniala_funkcja(depth, node, team):
         return node
     index = 0
     while index < len(node.children):
-        if team == 1:  # poprzedni ruch - komputer
+        if team == 1 and not node.children[index].combo:  # poprzedni ruch - komputer
             node.children[index] = possible_outcomes(node.children[index], "black")
             node.children[index] = wspaniala_funkcja(depth - 1, node.children[index], 0)
         else:
@@ -281,7 +287,7 @@ def move(w, l, W, L):
 
 
 def ai(board):
-    depth = 3
+    depth = 5
     root = Node(board)  # od zajaca root
     root = possible_outcomes(root, "red")
     root = wspaniala_funkcja(depth, root, 1)
@@ -292,7 +298,9 @@ def ai(board):
     for child in root.children:
         if child.score is result:
             results.append(child)
-
+    if random.choice(results).combo:
+        print("jest komboo")
+        return ai(random.choice(results).board)
     return random.choice(results).board
 
 
@@ -352,6 +360,8 @@ board_draw()
 while running:
     bicie = False
     for event in pygame.event.get():
+        print(marked)
+        print(is_move_available_from_pos(Board, "black", x, y))
         ai_move = False
         if event.type == pygame.QUIT:
             running = False
@@ -373,14 +383,14 @@ while running:
                     y = y + 1
                     Y = Y - 88
             elif event.key == pygame.K_SPACE:
-                if Board[x][y].team == "black":
                     if Board[x][y].occupied == 1 or Board[x][y].occupied == 2:
-                        if not bicie:
-                            if is_move_available(Board, "black"):
-                                if is_move_available_from_pos(Board, "black", x, y):
+                        if Board[x][y].team == "black":
+                            if not bicie:
+                                if is_move_available(Board, "black"):
+                                    if is_move_available_from_pos(Board, "black", x, y):
+                                        marked = [x, y]
+                                else:
                                     marked = [x, y]
-                            else:
-                                marked = [x, y]
                     else:
                         if (marked[0] > -1 and
                                 abs(marked[0] - x) == 1 and
