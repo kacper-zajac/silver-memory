@@ -175,14 +175,12 @@ def is_move_available(board, team):
 
 def possible_outcomes(node):
     is_bicie = is_move_available(node.board, "red")
-
-
     nums = [[-1, -1], [-1, 1], [1, -1], [1, 1]]
-    iter1 = 7
-    while iter1 >= 0:
-        iter2 = 7
-        while iter2 >= 0:
-            if node.board[iter1][iter2] == 1:
+    x = 7
+    while x >= 0:
+        y = 7
+        while y >= 0:
+            if node.board[x][y].occupied == 1:
                 team = node.board[x][y].team
 
                 for z in nums:
@@ -229,8 +227,8 @@ def possible_outcomes(node):
                         print(base)
                         base[0] += z[0]
                         base[1] += z[1]'''
-            iter2 -= 1
-        iter1 -= 1
+            y -= 1
+        x -= 1
     return node
 
 
@@ -254,9 +252,7 @@ def move(w, l, W, L):
 
 def ai(board):
     depth = 5
-    root = Node(board)  # od zajaca root
-    print(root.board, "chuj")
-    print("chujjjj")
+    root = Node(Board)  # od zajaca root
     root = possible_outcomes(root)
     root = wspaniala_funkcja(depth, root)
 
