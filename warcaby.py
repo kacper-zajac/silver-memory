@@ -4,7 +4,6 @@ import random
 import copy
 import itertools
 
-
 class Field:
     def __init__(self):
         self.occupied = 0  # 0 - field free        1 - regular pionek    2 - damka
@@ -78,7 +77,7 @@ def minimax(node, depth, alpha, beta, maximize):
 
 Board = [[Field() for x in range(8)] for y in range(8)]
 
-'''Board[0][0].occupied = 1  # ustawianie pionków
+Board[0][0].occupied = 1  # ustawianie pionków
 Board[2][0].occupied = 1
 Board[4][0].occupied = 1
 Board[6][0].occupied = 1
@@ -92,16 +91,8 @@ Board[0][2].occupied = 1
 Board[2][2].occupied = 1
 Board[4][2].occupied = 1
 Board[6][2].occupied = 1
-'''
 
-Board[7][3].occupied = 1
-Board[7][3].team = "red"
-Board[6][4].occupied = 1
-Board[6][2].occupied = 1
-Board[4][4].occupied = 1
-Board[2][4].occupied = 1
-
-'''Board[1][7].occupied = 1
+Board[1][7].occupied = 1
 Board[1][7].team = "red"
 Board[3][7].occupied = 1
 Board[3][7].team = "red"
@@ -127,7 +118,6 @@ Board[5][5].occupied = 1
 Board[5][5].team = "red"
 Board[7][5].occupied = 1
 Board[7][5].team = "red"
-'''
 
 
 def is_move_available_from_pos(board, team, x, y):
@@ -350,6 +340,7 @@ clock = pygame.time.Clock()  # nw po co
 img = pygame.image.load("board2.png")
 pionek = pygame.image.load("pionek.png")
 damka = pygame.image.load("damka.png")
+damkablack = pygame.image.load("damkablack.png")
 pionekred = pygame.image.load("pionekred.png")
 
 gameDisplay.blit(img, (0, 0))
@@ -382,11 +373,20 @@ def board_draw():
                 else:
                     gameDisplay.blit(pionekred, (19 + p * 88, 704 - t * 88 - 65))
             elif Board[p][t].occupied == 2:
-                gameDisplay.blit(damka, (19 + p * 88, 704 - t * 88 - 65))
+                if Board[p][t].team == "red":
+                    gameDisplay.blit(damka, (19 + p * 88, 704 - t * 88 - 65))
+                else:
+                    gameDisplay.blit(damkablack, (19 + p * 88, 704 - t * 88 - 65))
 
 
 marked = [-1, -1]  # nothing marked, value less than 0
 
+
+depth = int(input("Glebokosc - "))
+starts = int(input("Kto zaczyna? (0 - gracz, 1 - ai) - "))
+if starts:
+    Board = ai(Board, depth)
+    print("ai")
 board_draw()
 while running:
     bicie = False
@@ -496,7 +496,7 @@ while running:
                         bicie = False
                         ai_move = True
                         if not own_team:
-                            if not is_a_piece:
+                            if not is_a_piece and not is_move_available_from_pos(Board, "black", marked[0], marked[1]):
                                 move(marked[0], marked[1], x, y)
                             elif not too_many_pieces:
                                 move(marked[0], marked[1], x, y)
@@ -523,11 +523,8 @@ while running:
                     if not bicie:
                         marked = [-1, -1]
                         if ai_move:
-                            Board = ai(Board, 4)
-                            if Board is None:
-                                print("SSSSSSSSSSSSSSSSS")
-                                break
-                            if is_lose():
+                            Board = ai(Board, depth)
+                            if Board is None or is_lose():
                                 print("koniec przegrana")
                                 running = False
                                 break
